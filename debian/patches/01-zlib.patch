@@ -1,0 +1,28 @@
+Description: add zlib
+Last-Update: 2014-07-19
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+Index: trunk/configure.ac
+===================================================================
+--- trunk.orig/configure.ac	2014-07-19 15:43:15.000000000 +0200
++++ trunk/configure.ac	2014-07-19 15:48:14.745109540 +0200
+@@ -38,6 +38,7 @@
+ 
+ AC_CHECK_HEADERS([sane/sane.h],[],[AC_MSG_ERROR([SANE not found])])
+ AC_CHECK_HEADERS([sane/saneopts.h],[],[AC_MSG_ERROR([SANE not found])])
++AC_CHECK_HEADERS([zlib.h],[],[AC_MSG_ERROR([ZLib not found])])
+ 
+ dnl ###########################################################################
+ dnl Documentation
+Index: trunk/src/Makefile.am
+===================================================================
+--- trunk.orig/src/Makefile.am	2014-07-19 15:43:15.000000000 +0200
++++ trunk/src/Makefile.am	2014-07-19 15:47:51.812626560 +0200
+@@ -46,6 +46,7 @@
+ 	$(SIMPLE_SCAN_LIBS) \
+ 	$(COLORD_LIBS) \
+ 	-lsane \
++	-lz \
+ 	-lm
+ 
+ CLEANFILES = \

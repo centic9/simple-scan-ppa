@@ -1,0 +1,15 @@
+Description: Add _Keywords to .desktop file
+Author: Jörg Frings-Fürst <debian@jff-webhosting.net>
+Forwarded: not-needed
+Last-Update: 2014-08-18
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+Index: trunk/data/simple-scan.desktop.in
+===================================================================
+--- trunk.orig/data/simple-scan.desktop.in	2013-06-05 08:21:08.000000000 +0200
++++ trunk/data/simple-scan.desktop.in	2014-08-18 19:31:47.717829473 +0200
+@@ -8,3 +8,4 @@
+ StartupNotify=true
+ Categories=GNOME;GTK;Graphics;Scanning;
+ X-GNOME-Gettext-Domain=simple-scan
++Keywords=scan;simple;sane;documents;
