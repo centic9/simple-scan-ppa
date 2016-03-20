@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Canonical Ltd.
+ * Copyright (C) 2009-2015 Canonical Ltd.
  * Author: Robert Ancell <robert.ancell@canonical.com>
  *
  * This program is free software: you can redistribute it and/or modify it under
@@ -527,7 +527,7 @@ public class BookView : Gtk.Box
             return;
         this.cursor = cursor;
 
-        c = new Gdk.Cursor (cursor);
+        c = new Gdk.Cursor.for_display (get_display (), cursor);
         drawing_area.get_window ().set_cursor (c);
     }
 

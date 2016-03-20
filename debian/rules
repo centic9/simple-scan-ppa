@@ -1,4 +1,4 @@
-#!/usr/bin/make -f 
+#!/usr/bin/make -f
 
 #
 # 2014-07-22 Jörg Frings-Fürst <debian@jff-webhosting.net>
@@ -6,23 +6,15 @@
 # - enable hardening
 # - install NEWS as upstream changelog
 #
+# 2015-01-19 Jörg Frings-Fürst <debian@jff-webhosting.net>
 #
-
+# - remove old style hardening.
+# - remove useless comments.
 
 #
 # Hardening
 #
-#
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
-DPKG_EXPORT_BUILDFLAGS = 1
-include /usr/share/dpkg/buildflags.mk
-
-#export CPPFLAGS:=$(shell dpkg-buildflags --get CPPFLAGS)
-#export CFLAGS:=$(shell dpkg-buildflags --get CFLAGS)
-#export CXXFLAGS:=$(shell dpkg-buildflags --get CXXFLAGS)
-#export LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS)
-
-#LDFLAGS+=-Wl,--as-needed
 
 %:
 	dh $@ --with=autoreconf,scour

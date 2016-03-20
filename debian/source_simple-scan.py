@@ -8,7 +8,11 @@ import os.path
 from apport.hookutils import *
 
 LOG_FILE = os.path.expanduser('~/.cache/simple-scan/simple-scan.log')
-driver_packages = ['libsane', 'libsane-extras', 'hplip', 'hpoj']
+driver_packages = ['libsane', 'libsane-extras', # SANE drivers
+                   'hplip', 'hpoj', # HP drivers
+                   'iscan', 'iscan-data', 'iscan-network-nt', # Epson drivers
+                   'brscan', 'brscan2', 'brscan3', 'brscan4' # Brother drivers
+                  ]
 
 def add_info(report):
     attach_hardware(report)

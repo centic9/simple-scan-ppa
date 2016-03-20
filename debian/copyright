@@ -4,14 +4,14 @@ Upstream-Contact: Robert Ancell <robert.ancell@canonical.com>
 Source: https://launchpad.net/simple-scan/+download
 
 Files: *
-Copyright: 2009-2014 Canonical Ltd
+Copyright: 2009-2015 Canonical Ltd
 License: GPL-3+
 
 Files: debian/*
 Copyright:
  2009-2012 Alessio Treglia <alessio@debian.org>
  2009      Robert Ancell <robert.ancell@canonical.com>
- 2014      Jörg Frings-Fürst <debian@jff-webhosting.net>
+ 2014-2015 Jörg Frings-Fürst <debian@jff-webhosting.net>
 License: GPL-3+
 
 License: GPL-3+

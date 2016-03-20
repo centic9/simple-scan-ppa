@@ -1,7 +1,7 @@
 #!/bin/bash
 
 REPORTBUG_VERSION=$(dpkg-query -f '${source:Version}' -W reportbug)
-LOG_FILE = '~/.cache/simple-scan/simple-scan.log'
+LOG_FILE='~/.cache/simple-scan/simple-scan.log'
 
 # Depending on whether reportbug is new enough, we either write the output of
 # our various commands to a file and attach them to the report (this needs

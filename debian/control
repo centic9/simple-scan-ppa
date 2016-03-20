@@ -1,36 +1,37 @@
 Source: simple-scan
 Section: gnome
 Priority: optional
-Maintainer: Jörg Frings-Fürst <debian@jff-webhosting.net>
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+XSBC-Original-Maintainer: Jörg Frings-Fürst <debian@jff-webhosting.net>
 Standards-Version: 3.9.6
 Build-Depends:
  debhelper (>= 9),
  dh-autoreconf,
- gnome-common,
  gnome-pkg-tools (>= 0.10),
+ automake,
+ autoconf,
  intltool,
  libcairo2-dev,
  libcolord-dev,
  libdbus-glib-1-dev,
  libglib2.0-dev (>= 2.32),
  libgtk-3-dev,
- libgudev-1.0-dev,
- libjpeg-dev,
+ libgdk-pixbuf2.0-dev (>=2.31.1),
+ libgusb-dev,
+ libpackagekit-glib2-dev,
  libsane-dev,
  python-scour,
- libsqlite3-dev,
  valac (>= 0.22),
  yelp-tools,
  zlib1g-dev (>= 1.2.7)
 Homepage: https://launchpad.net/simple-scan
-Vcs-Git: git://anonscm.debian.org/collab-maint/simple-scan.git
-Vcs-Browser: http://anonscm.debian.org/cgit/collab-maint/simple-scan.git
+Vcs-Bzr: https://code.launchpad.net/~ubuntu-desktop/simple-scan/ubuntu
 
 Package: simple-scan
-Architecture: any
+Architecture: linux-any
 Depends:
  dbus-x11 (>= 1.6),
- gnome-icon-theme-symbolic | adwaita-icon-theme,
+ adwaita-icon-theme,
  xdg-utils,
  ${misc:Depends},
  ${shlibs:Depends}
@@ -46,7 +47,7 @@ Description: Simple Scanning Utility
 Package: simple-scan-dbg
 Section: debug
 Priority: extra
-Architecture: any
+Architecture: linux-any
 Depends:
  simple-scan (= ${binary:Version}),
  ${misc:Depends}

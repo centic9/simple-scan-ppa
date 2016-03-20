@@ -1,3 +1,122 @@
+Overview of changes in simple-scan 3.20.0
+
+  * Fix window state saving with client side decorations
+
+Overview of changes in simple-scan 3.19.92
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.19.91
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.19.90
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.19.4
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.19.3
+
+  * Fix typo in Epson website
+  * Enable translations for help documentation
+
+Overview of changes in simple-scan 3.19.2
+
+  * Make colord/packagekit support able to be explicitly disabled
+
+Overview of changes in simple-scan 3.19.1
+
+  * Make PackageKit support optional
+  * Add help about quality, brightness, contrast settings
+  * Fix help references to Wikipedia (currently just say Wiki)
+  * Fix SANE capability logging commas
+
+Overview of changes in simple-scan 3.18.0
+
+  * Show error message when fail to install drivers
+  * Bump copyright dates
+
+Overview of changes in simple-scan 3.17.92
+
+  * Correctly select the previous device after the device list is updated
+
+Overview of changes in simple-scan 3.17.91
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.17.90
+
+  * Default to PDF when saving in all cases.
+  * Always show file format options and use a combo box to fit better into dialog
+  * Detect HP scanners and install drivers using PackageKit if found.
+  * If SANE detects no scanners but we see USB IDs of Brother, Epson or Samsung
+    scanners then prompt the user to go to their website to install drivers.
+  * Use GUsb instead of GUdev.
+  * Fix error dialogs not showing.
+
+Overview of changes in simple-scan 3.17.4
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.17.3
+
+  * Stop using gnome-common, use autotools directly
+
+Overview of changes in simple-scan 3.17.2
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.17.1.1
+
+  * Build appdata in a separate directory so it can have translations merged in
+    but gschemas do not.
+
+Overview of changes in simple-scan 3.17.1
+
+  * Fix logic for adding blank page on page removal.
+  * Fix save button being inactive on pages restored after a crash
+  * Make appdata translatable and add screenshot
+
+Overview of changes in simple-scan 3.16.0
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.15.92
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.15.91
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.15.90
+
+  * Don't use GtkHeaderBar in LXDE, MATE
+
+Overview of changes in simple-scan 3.15.4
+
+  * Fix error where document was discarded if warning dialog was closed
+  * Use window decorations if running in Unity of XFCE, all others get the headerbar
+  * Add GenericName to .desktop file
+  * Add some keywords in the .desktop file
+  * Initialize GTK+ after command line options are parsed
+
+Overview of changes in simple-scan 3.15.3
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.15.2
+
+  * Store density information in bitmap formats (JPEG, PNG, TIFF). Requires
+    gdk-pixbuf 2.32.2
+
+Overview of changes in simple-scan 3.15.1
+
+  * Updated translations
+
 Overview of changes in simple-scan 3.14.0
 
   * No change version bump
