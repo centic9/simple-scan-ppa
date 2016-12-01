@@ -15,30 +15,28 @@
     </p>
     
     <steps>
-      <title>Use a Right Click</title>
-      <item><p>Right click anywhere on the image area and select "Crop".</p></item>
+      <title>Usar un clic del botón secundario</title>
+      <item><p>Haga clic con el botón secundario en cualquier parte de la imagen y seleccione «Cortar».</p></item>
       <item><p>Choose one of the fixed crop frames, or select "Custom" to manually
 	set the crop frame's dimensions by dragging its borders.</p></item>
       <item><p>Click and hold the frame, then move it to the desired position.</p></item>
     </steps>
     
     <steps>
-      <title>Use a Menu</title>
+      <title>Usar un menú</title>
       <item><p>Navigate to the <guiseq><gui>Page</gui><gui>Crop</gui></guiseq> menu.</p></item>
       <item><p>Choose one of the fixed crop frames, or select "Custom" to manually adjust the frame's dimensions by dragging its borders.</p></item>
       <item><p>Click and hold the frame, then move it to the desired position.</p></item>
     </steps>
     
     <steps>
-      <title>Use the Toolbar</title>
+      <title>Usar la barra de botones</title>
       <item><p>Click the "<gui>Crop</gui>" button in the toolbar.</p>
 	    <note style="tip"><p>This is the same as choosing "Custom" in step 2 of the
 	      aforementioned methods.</p></note></item>      
-      <item><p>Drag the borders of the frame to set the desired dimensions and position.</p></item>
+      <item><p>Arrastre los bordes del marco para establecer las dimensiones y posición deseadas.</p></item>
 
     </steps>
     
-    <note><p>
-    Each new scanned page will use the previous crop.
-    </p></note>
+    <note><p>Cada nueva página escaneada usará el recorte previo.</p></note>
 </page>

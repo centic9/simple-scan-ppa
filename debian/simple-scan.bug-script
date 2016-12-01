@@ -1,7 +1,25 @@
 #!/bin/bash
 
+cat <<EOF
+
+Providing additional information can help diagnose problems with simple-scan.
+Specifically, this would include:
+- Your personal simple-scan log file.
+- The list of your usb devices.
+- A list of detected scanners.
+
+If this information is not relevant for your bug report or you have privacy
+concerns, please choose no.
+
+EOF
+
+yesno "Do you want to provide additional information [Y|n]? " yep
+[ "$REPLY" = yep ] || exit 0
+
+
 REPORTBUG_VERSION=$(dpkg-query -f '${source:Version}' -W reportbug)
-LOG_FILE='~/.cache/simple-scan/simple-scan.log'
+#LOG_FILE="~/.cache/simple-scan/simple-scan.log"
+LOG_FILE="/home/${USER}/.cache/simple-scan/simple-scan.log"
 
 # Depending on whether reportbug is new enough, we either write the output of
 # our various commands to a file and attach them to the report (this needs
@@ -21,8 +39,21 @@ if dpkg --compare-versions "$REPORTBUG_VERSION" ge "6.5.0"; then
     #
     if [ -f ${LOG_FILE} ]; then
 	cat ${LOG_FILE} >$DIR/logfile.user
-	echo $DIR/logfile.user >&3
+	echo "$DIR/logfile.user" >&3
     fi
+
+    #
+    # scanimage -L
+    #
+    scanimage -L >$DIR/scanimage.user
+    echo "$DIR/scanimage.user" >&3
+
+    #
+    # lsusb
+    #
+    lsusb -v >$DIR/lsusb.user
+    echo "$DIR/lsusb.user" >&3
+
 
     echo "-- END ATTACHMENTS --" >&3
 fi

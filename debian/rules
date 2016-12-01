@@ -10,17 +10,25 @@
 #
 # - remove old style hardening.
 # - remove useless comments.
+#
+# 2015-04-29 Jörg Frings-Fürst <debian@jff-webhosting.net>
+#
+# - remove override_dh_auto_test
+#
+# 2016-10-02 Jörg Frings-Fürst <debian@jff-webhosting.net>
+#
+# - remove gcc-6 comments
+# - remove override_dh_auto_build
+#
 
 #
 # Hardening
 #
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
+
 %:
 	dh $@ --with=autoreconf,scour
-
-# Fixes FTBFS
-override_dh_auto_test:
 
 # Autoreconf due to 01_lpi.patch
 override_dh_autoreconf:
@@ -32,10 +40,6 @@ override_dh_auto_clean:
 	dh_auto_clean
 	[ ! -h gnome-doc-utils.make ] || \
 	rm gnome-doc-utils.make
-
-override_dh_auto_build:
-	cd po; intltool-update -p
-	dh_auto_build
 
 override_dh_strip:
 	dh_strip -psimple-scan --dbg-package=simple-scan-dbg

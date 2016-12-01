@@ -5,7 +5,7 @@
         <link type="guide" xref="index#modify"/>
     </info>
   
-	<title>Rotating a Page</title>
+	<title>Otočenie stránky</title>
 
     <p>
     In <app>Simple Scan</app>, you can change the rotation of a page either before or after scanning the page.
@@ -30,27 +30,25 @@
     </steps>
     
     <steps>
-      <title>Use Shortcuts</title>
+      <title>Použitie skratiek</title>
       <item><p>Select the page you want to rotate by clicking on it once.</p></item>
-      <item><p>Press one of the following shortcut keys:</p>
+      <item><p>Stlačte jednu z nasledovných klávesových skratiek:</p>
 	<table frame="bottom left right" rules="rows cols" shade="rows">
 	<tr>
-		<td><p><em>Command</em></p></td>
-		<td><p><em>Shortcut Key</em></p></td>
+		<td><p><em>Príkaz</em></p></td>
+		<td><p><em>Klávesová skratka</em></p></td>
 	</tr>
 	<tr>
-		<td><p>Rotate Left</p></td>
-		<td><p><key>[</key> (left bracket)</p></td>
+		<td><p>Otočenie doľava</p></td>
+		<td><p><key>[</key> (ľavá hranatá zátvorka)</p></td>
 	</tr>
 	<tr>
-		<td><p>Rotate Right</p></td>
-		<td><p><key>]</key> (right bracket)</p></td>
+		<td><p>Otočenie doprava</p></td>
+		<td><p><key>]</key> (pravá hranatá zátvorka)</p></td>
 	</tr>
 	</table>
       </item>
     </steps>
     
-    <note><p>
-    Each new scanned page will use the previous rotation.
-    </p></note>
+    <note><p>Pre každú novú skenovanú stránku sa použije predchádzajúce otočenie.</p></note>
 </page>

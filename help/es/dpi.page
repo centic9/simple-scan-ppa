@@ -19,32 +19,32 @@
     
     <table frame="bottom left right" rules="rows cols" shade="rows">
 	<tr>
-		<td><p><em>Text Resolution</em></p></td>
-		<td><p><em>Photo Resolution</em></p></td>
+		<td><p><em>Resolución de texto</em></p></td>
+		<td><p><em>Resolución de fotos</em></p></td>
 	</tr>
 	<tr>
-		<td><p>75 dpi (draft)</p></td>
-		<td><p>75 dpi (draft)</p></td>
+		<td><p>75 ppp (borrador)</p></td>
+		<td><p>75 ppp (borrador)</p></td>
 	</tr>
 	<tr>
-		<td><p>150 dpi (default)</p></td>
-		<td><p>150 dpi</p></td>
+		<td><p>150 ppp (predeterminado)</p></td>
+		<td><p>150 ppp</p></td>
 	</tr>
 	<tr>
-		<td><p>300 dpi</p></td>
-		<td><p>300 dpi (default)</p></td>
+		<td><p>300 ppp</p></td>
+		<td><p>300 ppp (predeterminado)</p></td>
 	</tr>
 	<tr>
-		<td><p>600 dpi</p></td>
-		<td><p>600 dpi</p></td>
+		<td><p>600 ppp</p></td>
+		<td><p>600 ppp</p></td>
 	</tr>
 	<tr>
-		<td><p>1200 dpi (high resolution)</p></td>
-		<td><p>1200 dpi (high resolution)</p></td>
+		<td><p>1200 ppp (alta resolución)</p></td>
+		<td><p>1200 ppp (alta resolución)</p></td>
 	</tr>
 	<tr>
-		<td><p>2400 dpi</p></td>
-		<td><p>2400 dpi</p></td>
+		<td><p>2400 ppp</p></td>
+		<td><p>2400 ppp</p></td>
 	</tr>
     </table>
     

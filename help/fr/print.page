@@ -7,23 +7,14 @@
   
 	<title>Impression</title>
 
-    <p>
-    <app>Simple Scan</app> allows you print a scanned document directly from the its
-    interface, without having to save the document first. This feature makes <app>Simple
-    Scan</app> a very convenient tool for making copies of documents or photos. 
-    </p>
+    <p><app>Simple Scan</app> vous permet d'imprimer un document numérisé directement à partir de son interface, sans avoir à enregistrer le premier document. Cette caractéristique fait de <app>Simple Scan</app> un outil très pratique pour faire des copies de documents ou de photos.</p>
     <steps>
-      <title>To Print a Document</title>
+      <title>Pour imprimer un document</title>
       <item>
-	<p>Go to the <guiseq><gui>Document</gui><gui>Print</gui>
-	</guiseq> menu or use the keyboard shortcut <keyseq><key>Ctrl</key><key>P</key></keyseq>.
-	This will open the "Print" dialog box.
-	</p>
+	<p>Allez dans le menu <guiseq><gui>Document</gui><gui>Imprimer</gui> </guiseq> ou utilisez le raccourci clavier <keyseq><key>Ctrl</key><key>P</key></keyseq>. Ceci ouvrira la boîte de dialogue « Imprimer ».</p>
       </item>
       <item>
-	<p>From the "Print" dialog box choose your desired printing settings and/or Print Preview
-	the document, then press the "Print" button.
-	</p>
+	<p>Depuis la boîte de dialogue « Imprimer » sélectionnez vos paramètres d'impression désirés et/ou prévisualisez le document puis cliquez sur le bouton « Imprimer ».</p>
       </item>
      </steps>
 </page>

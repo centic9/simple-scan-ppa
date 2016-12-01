@@ -7,15 +7,12 @@
 
 	<title>Použitie automatického podávača dokumentov</title>
 
-    <p>
-    If your scanner features an Automatic Document Feeder (ADF) 
-    you can scan all the pages from the feeder via one of following methods:
-    </p>
+    <p>Ak váš skener obsahuje automatický podávač dokumentov (ADF), môžete skenovať všetky stránky z podávača jedným z týchto spôsobov:</p>
       <steps>
 	<title/>
-	<title>Use a Keyboard Shortcut</title>
+	<title>Používať klávesové skratky</title>
 	<item>
-	  <p>Press <keyseq><key>Ctrl</key><key>F</key></keyseq></p>
+	  <p>Stlač <keyseq><key>Ctrl</key><key>F</key></keyseq></p>
 	</item>      
       </steps>
       
@@ -31,10 +28,10 @@
       <steps>
 	<title>Use the Toolbar Buttons</title>
 	<item>
-	  <p>Click on the arrow to the right of the "Scan" button.</p>
+	  <p>Kliknite na šípku napravo od tlačidla „Skenovať“.</p>
 	</item>
 	<item>
-	  <p>Choose "All Pages From Feeder".</p>
+	  <p>Zvoľte „Všetky stránky z podávača“.</p>
 	  <media type="image" src="figures/scan_toolbar.png"/>
 	</item>
       </steps>

@@ -13,14 +13,14 @@
     </p>
       <steps>
 	<title/>
-	<title>Use a Keyboard Shortcut</title>
+	<title>Użyj skrótu klawiszowego</title>
 	<item>
-	  <p>Press <keyseq><key>Ctrl</key><key>F</key></keyseq></p>
+	  <p>Wciśnij <keyseq><key>Ctrl</key><key>F</key></keyseq></p>
 	</item>      
       </steps>
       
       <steps>
-	<title>Use a Menu</title>
+	<title>Użyj menu</title>
 	<item>
 	  <p>Navigate to <guiseq><gui>Document</gui>
 	  <gui>Scan</gui><gui>All Pages From Feeder</gui></guiseq>.
@@ -34,7 +34,7 @@
 	  <p>Click on the arrow to the right of the "Scan" button.</p>
 	</item>
 	<item>
-	  <p>Choose "All Pages From Feeder".</p>
+	  <p>Wybierz "Wszystkie strony z podajnika".</p>
 	  <media type="image" src="figures/scan_toolbar.png"/>
 	</item>
       </steps>

@@ -10,7 +10,7 @@
 
     <p>Pre skenovanie dokumentu z vášho skenera:</p>
     <steps>
-      <item><p>Connect the scanner to your computer and power it on.</p></item>
+      <item><p>Pripojte skener k vášmu počítaču a zapnite ho .</p></item>
       <item><p>Otvorte aplikáciu <app>Jednoduché skenovanie</app>.</p></item>
       <item><p>Click the arrow to the right of the "Scan" button and choose the type
 	     of document you are scanning: <em>Photo</em> or <em>Text</em>.</p>

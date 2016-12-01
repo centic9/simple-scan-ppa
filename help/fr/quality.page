@@ -5,12 +5,7 @@
         <link type="guide" xref="index#use"/>
     </info>
 
-	<title>Setting the Image Quality</title>
+	<title>Réglage de la qualité de l'image</title>
 
-    <p>
-    You can adjust the image quality that is used when the scan is converted to a file by changing this setting in the <guiseq><gui>Document</gui><gui>Preferences</gui></guiseq> menu.
-    Using a low quality will result in a small file size but may show some blurring or blockiness in the image.
-    A high quality will keep all the scanned information but require a larger file size.
-    See the <link href="https://en.wikipedia.org/wiki/Lossy_compression">Lossy compression Wikipedia page</link> for more information.
-    </p>    
+    <p>Vous pouvez ajuster la qualité d'image utilisée lorsque la numérisation est convertie en fichier en changeant ce paramètre dans le menu <guiseq><gui>Document</gui><gui>Préférences</gui></guiseq>. L'utilisation d'une qualité moindre se traduira par une petite taille de fichier, mais pourra présenter un certain flou ou une pixellisation de l'image. Une qualité élevée permet de conserver toutes les informations numérisées, mais nécessite une taille de fichier plus volumineux. Consultez la <link href="https://fr.wikipedia.org/wiki/Compression_de_donn%C3%A9es#Compression_avec_pertes">page Wikipédia sur la compression de données</link> pour plus d'informations.</p>    
 </page>

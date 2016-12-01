@@ -13,7 +13,7 @@
 		<include xmlns="http://www.w3.org/2001/XInclude" href="legal.xml"/>
 	</info>
 
-	<title><media type="image" src="figures/icon.png"/> Simple Scan Manual</title>
+	<title><media type="image" src="figures/icon.png"/> Podręcznik Prostego skanowania</title>
     
     <section id="acquire" style="2column">
         <title>Skanowanie stron</title>
@@ -28,6 +28,6 @@
     </section>
 
     <section id="shortcuts" style="2column">
-	<title>Simple Scan Shortcuts</title>
+	<title>Skróty Prostego skanowania</title>
     </section>
 </page>
