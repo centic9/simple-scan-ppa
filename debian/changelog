@@ -1,3 +1,71 @@
+simple-scan (3.28.0-0ubuntu1) bionic; urgency=medium
+
+  * New upstream release:
+    - Updated translations
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Tue, 27 Mar 2018 12:04:53 +1300
+
+simple-scan (3.27.91-0ubuntu1) bionic; urgency=medium
+
+  * New upstream release
+  * New debian/patches/0010-metadata.patch:
+    - Applied upstream
+  * debian/watch:
+    - Track 3.27
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Tue, 20 Feb 2018 13:52:45 +1300
+
+simple-scan (3.26.3-0ubuntu1) bionic; urgency=medium
+
+  * New upstream stable release:
+    - Fix email sending failing with PDF attachments (LP: #1743096)
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Mon, 22 Jan 2018 15:42:39 +1300
+
+simple-scan (3.26.2-1ubuntu1) bionic; urgency=medium
+
+  * Sync with Debian. Remaining changes:
+    - Update apport hook to report versions for more scanner drivers
+    - Use dh_gnome and add workaround for Ubuntu translations issue
+    - Several updates to Build-Depends (Closes: #881934)
+
+ -- Jeremy Bicha <jbicha@ubuntu.com>  Thu, 16 Nov 2017 14:26:17 -0500
+
+simple-scan (3.26.2-1) unstable; urgency=medium
+
+  * New upstream release (Closes: #881345):
+    - Updated translations.
+    - Check if files exist in multi-file saves.
+    - Remove "Save As" - save now always prompts when overwriting
+      (Closes: #852730).
+    - Add a continuous scan option.
+    - Make email and print actions insensitive when document empty.
+    - Remove .ps and .tiff output support - this is not required.
+    - Switch from autotools to Meson.
+  * New README.source to explain the branching model used.
+  * Switch buildsystem to meson:
+    + debian/control:
+      - Add meson to Build-Depends.
+      - Remove dh-autoreconf from Build-Depends.
+    + debian/rules:
+      - Remove the --with=autoreconf parameter.
+      - Remove override_dh_auto_clean and override_dh_autoreconf section.
+    + debian/simple-scan.install:
+      - Remove useless /usr/bin and /usr/share.
+    + Remove useless debian/patches/0005-zlib.patch.
+  * Declare compliance with Debian Policy 4.1.1. (No changes needed).
+  * Use the automatic debug symbol packages:
+    - Remove simple-scan-dbg section from debian/control.
+    - Remove override_dh_strip from debian/rules.
+  * New Homepage:
+    - debian/watch: switch to gnome.
+  * Change to my new email address.
+  * Drop useless debian/simple-scan.lintian-overrides.
+  * New debian/patches/0010-metadata.patch to install appstream metadata into
+    the requested directory /usr/share/metainfo/.
+
+ -- Jörg Frings-Fürst <debian@jff.email>  Sun, 12 Nov 2017 13:27:57 +0100
+
 simple-scan (3.23.2-1) unstable; urgency=medium
 
   * New upstream release (Closes: #843941):

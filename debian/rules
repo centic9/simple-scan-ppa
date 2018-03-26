@@ -20,32 +20,30 @@
 # - remove gcc-6 comments
 # - remove override_dh_auto_build
 #
+# 2017-07-16 Jörg Frings-Fürst <debian@jff-webhosting.net>
+#
+# - switch to meson
+# - remove override_dh_strip
+#
 
 #
 # Hardening
 #
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
-
 %:
-	dh $@ --with=autoreconf,scour
-
-# Autoreconf due to 01_lpi.patch
-override_dh_autoreconf:
-	[ -e gnome-doc-utils.make ] || \
-	ln -s /usr/share/gnome-doc-utils/gnome-doc-utils.make
-	dh_autoreconf
-
-override_dh_auto_clean:
-	dh_auto_clean
-	[ ! -h gnome-doc-utils.make ] || \
-	rm gnome-doc-utils.make
-
-override_dh_strip:
-	dh_strip -psimple-scan --dbg-package=simple-scan-dbg
+	dh $@  --buildsystem=meson --with gnome,scour
 
 override_dh_installdocs:
 	dh_installdocs --link-doc=simple-scan
 
 override_dh_installchangelogs:
 	dh_installchangelogs NEWS
+
+override_dh_gnome_clean:
+	dh_gnome_clean --no-control
+
+# Work around Ubuntu translations issue
+override_dh_translations:
+	ninja -C obj-$(DEB_HOST_GNU_TYPE) simple-scan-pot
+	dh_translations

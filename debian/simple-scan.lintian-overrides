@@ -1,5 +1,0 @@
-#
-# Override this false positve error:
-# (See Debian bug #762753)
-#
-privacy-breach-generic

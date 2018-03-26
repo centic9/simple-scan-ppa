@@ -624,13 +624,16 @@ public class Page
         return image;
     }
 
-    private string? get_icc_data_encoded (string icc_profile_filename)
+    public string? get_icc_data_encoded ()
     {
+        if (color_profile == null)
+            return null;
+
         /* Get binary data */
         string contents;
         try
         {
-            FileUtils.get_contents (icc_profile_filename, out contents);
+            FileUtils.get_contents (color_profile, out contents);
         }
         catch (Error e)
         {
@@ -641,71 +644,33 @@ public class Page
         /* Encode into base64 */
         return Base64.encode ((uchar[]) contents.to_utf8 ());
     }
-    
+
     public void copy_to_clipboard (Gtk.Window window)
-    {        
+    {
         var display = window.get_display ();
         var clipboard = Gtk.Clipboard.get_for_display (display, Gdk.SELECTION_CLIPBOARD);
         var image = get_image (true);
         clipboard.set_image (image);
     }
 
-    public void save (string type, int quality, File file) throws Error
+    public void save_png (File file) throws Error
     {
         var stream = file.replace (null, false, FileCreateFlags.NONE, null);
-        var writer = new PixbufWriter (stream);
         var image = get_image (true);
 
         string? icc_profile_data = null;
         if (color_profile != null)
-            icc_profile_data = get_icc_data_encoded (color_profile);
+            icc_profile_data = get_icc_data_encoded ();
 
-        if (strcmp (type, "jpeg") == 0)
+        string[] keys = { "x-dpi", "y-dpi", "icc-profile", null };
+        string[] values = { "%d".printf (dpi), "%d".printf (dpi), icc_profile_data, null };
+        if (icc_profile_data == null)
+            keys[2] = null;
+
+        image.save_to_callbackv ((buf) =>
         {
-            string[] keys = { "x-dpi", "y-dpi", "quality", "icc-profile", null };
-            string[] values = { "%d".printf (dpi), "%d".printf (dpi), "%d".printf (quality), icc_profile_data, null };
-            if (icc_profile_data == null)
-                keys[3] = null;
-            writer.save (image, "jpeg", keys, values);
-        }
-        else if (strcmp (type, "png") == 0)
-        {
-            string[] keys = { "x-dpi", "y-dpi", "icc-profile", null };
-            string[] values = { "%d".printf (dpi), "%d".printf (dpi), icc_profile_data, null };
-            if (icc_profile_data == null)
-                keys[2] = null;
-            writer.save (image, "png", keys, values);
-        }
-        else if (strcmp (type, "tiff") == 0)
-        {
-            string[] keys = { "x-dpi", "y-dpi", "compression", "icc-profile", null };
-            string[] values = { "%d".printf (dpi), "%d".printf (dpi), "8" /* Deflate compression */, icc_profile_data, null };
-            if (icc_profile_data == null)
-                keys[3] = null;
-            writer.save (image, "tiff", keys, values);
-        }
-        else
-            throw new FileError.INVAL ("Unknown file type: %s".printf (type));
-    }
-}
-
-public class PixbufWriter
-{
-    public FileOutputStream stream;
-
-    public PixbufWriter (FileOutputStream stream)
-    {
-        this.stream = stream;
-    }
-
-    public void save (Gdk.Pixbuf image, string type, string[] option_keys, string[] option_values) throws Error
-    {
-        image.save_to_callbackv (write_pixbuf_data, type, option_keys, option_values);
-    }
-
-    private bool write_pixbuf_data (uint8[] buf) throws Error
-    {
-        stream.write_all (buf, null, null);
-        return true;
+            stream.write_all (buf, null, null);
+            return true;
+        }, "png", keys, values);
     }
 }

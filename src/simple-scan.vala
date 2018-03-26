@@ -23,7 +23,7 @@ public class SimpleScan : Gtk.Application
           /* Help string for command line --debug flag */
           N_("Print debugging messages"), null},
         { "fix-pdf", 0, 0, OptionArg.STRING, ref fix_pdf_filename,
-          N_("Fix PDF files generated with older versions of Simple Scan"), "FILENAME..."},
+          N_("Fix PDF files generated with older versions of Simple Scan"), "FILENAME…"},
         { null }
     };
     private static Timer log_timer;
@@ -32,12 +32,16 @@ public class SimpleScan : Gtk.Application
     private ScanDevice? default_device = null;
     private bool have_devices = false;
     private GUsb.Context usb_context;
-    private UserInterface ui;
+    private AppWindow app;
     private Scanner scanner;
     private Book book;
 
     public SimpleScan (ScanDevice? device = null)
     {
+        /* The inhibit () method use this */
+        Object (application_id: "org.gnome.SimpleScan");
+        register_session = true;
+
         default_device = device;
     }
 
@@ -45,11 +49,10 @@ public class SimpleScan : Gtk.Application
     {
         base.startup ();
 
-        ui = new UserInterface ();
-        book = ui.book;
-        ui.start_scan.connect (scan_cb);
-        ui.stop_scan.connect (cancel_cb);
-        ui.email.connect (email_cb);
+        app = new AppWindow ();
+        book = app.book;
+        app.start_scan.connect (scan_cb);
+        app.stop_scan.connect (cancel_cb);
 
         scanner = Scanner.get_instance ();
         scanner.update_devices.connect (update_scan_devices_cb);
@@ -78,15 +81,15 @@ public class SimpleScan : Gtk.Application
             List<ScanDevice> device_list = null;
 
             device_list.append (default_device);
-            ui.set_scan_devices (device_list);
-            ui.selected_device = default_device.name;
+            app.set_scan_devices (device_list);
+            app.selected_device = default_device.name;
         }
     }
 
     public override void activate ()
     {
         base.activate ();
-        ui.start ();
+        app.start ();
         scanner.start ();
     }
 
@@ -94,7 +97,7 @@ public class SimpleScan : Gtk.Application
     {
         base.shutdown ();
         book = null;
-        ui = null;
+        app = null;
         usb_context = null;
         scanner.free ();
     }
@@ -127,7 +130,7 @@ public class SimpleScan : Gtk.Application
         if (!have_devices)
             missing_driver = suggest_driver ();
 
-        ui.set_scan_devices (devices_copy, missing_driver);
+        app.set_scan_devices (devices_copy, missing_driver);
     }
     
     /* Taken from /usr/local/Brother/sane/Brsane.ini from brscan driver */
@@ -162,7 +165,7 @@ public class SimpleScan : Gtk.Application
      * print ('{ ' + ', '.join (ids) + ' }')
      */
 
-    /* HPAIO IDs extraced using the following Python:
+    /* HPAIO IDs extracted using the following Python:
      * import sys
      * ids = []
      * for f in sys.argv:
@@ -191,9 +194,7 @@ public class SimpleScan : Gtk.Application
         add_devices (driver_map, samsung_devices, "samsung");
         add_devices (driver_map, hpaio_devices, "hpaio");
         add_devices (driver_map, epkowa_devices, "epkowa");        
-        var devices = GUsb.context_get_devices (usb_context);
-        /* Fixed in GUsb 0.2.7: https://github.com/hughsie/libgusb/commit/83a6b1a20653c1a17f0a909f08652b5e1df44075 */
-        /*var devices = GUSB.context_get_devices (context);*/
+        var devices = usb_context.get_devices ();
         for (var i = 0; i < devices.length; i++)
         {
             var device = devices.data[i];
@@ -214,7 +215,7 @@ public class SimpleScan : Gtk.Application
     private void authorize_cb (Scanner scanner, string resource)
     {
         string username, password;
-        ui.authorize (resource, out username, out password);
+        app.authorize (resource, out username, out password);
         scanner.authorize (username, password);
     }
 
@@ -224,7 +225,7 @@ public class SimpleScan : Gtk.Application
         var page = book.get_page (-1);
         if (page != null && !page.has_data)
         {
-            ui.selected_page = page;
+            app.selected_page = page;
             page.start ();
             return page;
         }
@@ -264,7 +265,7 @@ public class SimpleScan : Gtk.Application
                 page.set_custom_crop (cw, ch);
             page.move_crop (cx, cy);
         }
-        ui.selected_page = page;
+        app.selected_page = page;
         page.start ();
 
         return page;
@@ -281,7 +282,7 @@ public class SimpleScan : Gtk.Application
         var device_id = "sane:%s".printf (device_name);
         debug ("Getting color profile for device %s", device_name);
 
-        var client = new Colord.Client ();
+        var client = new Cd.Client ();
         try
         {
             client.connect_sync ();
@@ -292,10 +293,10 @@ public class SimpleScan : Gtk.Application
             return null;
         }
 
-        Colord.Device device;
+        Cd.Device device;
         try
         {
-            device = client.find_device_by_property_sync (Colord.DEVICE_PROPERTY_SERIAL, device_id);
+            device = client.find_device_by_property_sync (Cd.DEVICE_PROPERTY_SERIAL, device_id);
         }
         catch (Error e)
         {
@@ -387,19 +388,68 @@ public class SimpleScan : Gtk.Application
         remove_empty_page ();
         if (error_code != Sane.Status.CANCELLED)
         {
-            ui.show_error (/* Title of error dialog when scan failed */
-                           _("Failed to scan"),
-                           error_string,
-                           have_devices);
+            app.show_error_dialog (/* Title of error dialog when scan failed */
+                                   _("Failed to scan"),
+                                   error_string);
         }
     }
 
+    private uint inhibit_cookie;
+    private FreedesktopScreensaver? fdss;
+
     private void scanner_scanning_changed_cb (Scanner scanner)
     {
-        ui.scanning = scanner.is_scanning ();
+        var is_scanning = scanner.is_scanning ();
+
+        if (is_scanning)
+        {
+            /* Attempt to inhibit the screensaver when scanning */
+            var reason = _("Scan in progress");
+
+            /* This should work on Gnome, Budgie, Cinnamon, Mate, Unity, ...
+             * but will not work on KDE, LXDE, XFCE, ... */
+            inhibit_cookie = inhibit (app, Gtk.ApplicationInhibitFlags.IDLE, reason);
+
+            if (!is_inhibited (Gtk.ApplicationInhibitFlags.IDLE))
+            {
+                /* If the previous method didn't work, try the one
+                 * provided by Freedesktop. It should work with KDE,
+                 * LXDE, XFCE, and maybe others as well. */
+                try
+                {
+                    if ((fdss = FreedesktopScreensaver.get_proxy ()) != null)
+                    {
+                        inhibit_cookie = fdss.inhibit ("Simple-Scan", reason);
+                    }
+                }
+                catch (Error error) {}
+            }
+        }
+        else
+        {
+            /* When finished scanning, uninhibit if inhibit was working */
+            if (inhibit_cookie != 0)
+            {
+                if (fdss == null)
+                        uninhibit (inhibit_cookie);
+                else
+                {
+                    try
+                    {
+                        fdss.uninhibit (inhibit_cookie);
+                    }
+                    catch (Error error) {}
+                    fdss = null;
+                }
+
+                inhibit_cookie = 0;
+            }
+        }
+
+        app.scanning = is_scanning;
     }
 
-    private void scan_cb (UserInterface ui, string? device, ScanOptions options)
+    private void scan_cb (AppWindow ui, string? device, ScanOptions options)
     {
         debug ("Requesting scan at %d dpi from device '%s'", options.dpi, device);
 
@@ -409,96 +459,9 @@ public class SimpleScan : Gtk.Application
         scanner.scan (device, options);
     }
 
-    private void cancel_cb (UserInterface ui)
+    private void cancel_cb (AppWindow ui)
     {
         scanner.cancel ();
-    }
-
-    private string? get_temporary_filename (string prefix, string extension)
-    {
-        /* NOTE: I'm not sure if this is a 100% safe strategy to use g_file_open_tmp(), close and
-         * use the filename but it appears to work in practise */
-
-        var filename = "%sXXXXXX.%s".printf (prefix, extension);
-        string path;
-        try
-        {
-            var fd = FileUtils.open_tmp (filename, out path);
-            Posix.close (fd);
-        }
-        catch (Error e)
-        {
-            warning ("Error saving email attachment: %s", e.message);
-            return null;
-        }
-
-        return path;
-    }
-
-    private void email_cb (UserInterface ui, string profile, int quality)
-    {
-        var saved = false;
-        var command_line = "xdg-email";
-
-        /* Save text files as PDFs */
-        if (profile == "text")
-        {
-            /* Open a temporary file */
-            var path = get_temporary_filename ("scan", "pdf");
-            if (path != null)
-            {
-                var file = File.new_for_path (path);
-                ui.show_progress_dialog ();
-                try
-                {
-                    book.save ("pdf", quality, file);
-                }
-                catch (Error e)
-                {
-                    ui.hide_progress_dialog ();
-                    warning ("Unable to save email file: %s", e.message);
-                    return;
-                }
-                command_line += " --attach %s".printf (path);
-            }
-        }
-        else
-        {
-            for (var i = 0; i < book.n_pages; i++)
-            {
-                var path = get_temporary_filename ("scan", "jpg");
-                if (path == null)
-                {
-                    saved = false;
-                    break;
-                }
-
-                var file = File.new_for_path (path);
-                try
-                {
-                    book.get_page (i).save ("jpeg", quality, file);
-                }
-                catch (Error e)
-                {
-                    warning ("Unable to save email file: %s", e.message);
-                    return;
-                }
-                command_line += " --attach %s".printf (path);
-
-                if (!saved)
-                    break;
-            }
-        }
-
-        debug ("Launching email client: %s", command_line);
-        try
-        {
-            Process.spawn_command_line_async (command_line);
-        }
-        catch (Error e)
-        {
-            warning ("Unable to start email: %s", e.message);
-        }
     }
 
     private static void log_cb (string? log_domain, LogLevelFlags log_level, string message)
@@ -618,7 +581,7 @@ public class SimpleScan : Gtk.Application
         Intl.textdomain (GETTEXT_PACKAGE);
 
         var c = new OptionContext (/* Arguments and description for --help text */
-                                   _("[DEVICE...] - Scanning utility"));
+                                   _("[DEVICE…] — Scanning utility"));
         c.add_main_entries (options, GETTEXT_PACKAGE);
         c.add_group (Gtk.get_option_group (true));
         try
@@ -629,7 +592,7 @@ public class SimpleScan : Gtk.Application
         {
             stderr.printf ("%s\n", e.message);
             stderr.printf (/* Text printed out when an unknown command-line argument provided */
-                           _("Run '%s --help' to see a full list of available command line options."), args[0]);
+                           _("Run “%s --help” to see a full list of available command line options."), args[0]);
             stderr.printf ("\n");
             return Posix.EXIT_FAILURE;
         }

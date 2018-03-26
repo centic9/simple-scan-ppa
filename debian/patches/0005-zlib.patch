@@ -20,7 +20,7 @@ Index: trunk/src/Makefile.am
 +++ trunk/src/Makefile.am
 @@ -57,6 +57,7 @@ simple_scan_LDADD = \
  	$(COLORD_LIBS) \
- 	$(PACKAGEKIT_LIBS) \    
+ 	$(PACKAGEKIT_LIBS) \
  	-lsane \
 +	-lz \
  	-lm
