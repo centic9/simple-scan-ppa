@@ -25,6 +25,11 @@
 # - switch to meson
 # - remove override_dh_strip
 #
+# 2018-07-16 Jörg Frings-Fürst <debian@jff.email>
+#
+# - use gnome and override_dh_translation.
+#
+
 
 #
 # Hardening

@@ -1,3 +1,46 @@
+Overview of changes in simple-scan 3.30.1.1
+
+  * Rebuild tarball as 3.30 releases have out of date content
+
+Overview of changes in simple-scan 3.30.1
+
+  * Update homepage from Launchpad to gitlab.gnome.org
+
+Overview of changes in simple-scan 3.30.0
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.29.92
+
+  * Keep scanning while pages are reordered
+  * Update README
+
+Overview of changes in simple-scan 3.29.91
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.29.90
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.29.4
+
+  * Add A3 paper size to preferences
+  * Remove app menu and add menu into headerbar
+
+Overview of changes in simple-scan 3.29.3
+
+  * Handle NO_DOCS response during sane_read calls
+
+Overview of changes in simple-scan 3.29.2
+
+  * Fix compilation with recent Vala version
+  * Stop using deprecated API
+
+Overview of changes in simple-scan 3.28.1
+
+  * Updated translations
+
 Overview of changes in simple-scan 3.28.0
 
   * Updated translations

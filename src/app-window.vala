@@ -52,6 +52,8 @@ public class AppWindow : Gtk.ApplicationWindow
     [GtkChild]
     private Gtk.RadioMenuItem custom_crop_menuitem;
     [GtkChild]
+    private Gtk.RadioMenuItem a3_menuitem;
+    [GtkChild]
     private Gtk.RadioMenuItem a4_menuitem;
     [GtkChild]
     private Gtk.RadioMenuItem a5_menuitem;
@@ -762,7 +764,9 @@ public class AppWindow : Gtk.ApplicationWindow
             var crop_name = page.crop_name;
             if (crop_name != null)
             {
-                if (crop_name == "A4")
+                if (crop_name == "A3")
+                    menuitem = a3_menuitem;
+                else if (crop_name == "A4")
                     menuitem = a4_menuitem;
                 else if (crop_name == "A5")
                     menuitem = a5_menuitem;
@@ -814,9 +818,9 @@ public class AppWindow : Gtk.ApplicationWindow
         }
     }
 
-    private void show_page_menu_cb (BookView view)
+    private void show_page_menu_cb (BookView view, Gdk.Event event)
     {
-        page_menu.popup (null, null, null, 3, Gtk.get_current_event_time ());
+        page_menu.popup_at_pointer (event);
     }
 
     [GtkCallback]
@@ -922,6 +926,13 @@ public class AppWindow : Gtk.ApplicationWindow
     {
         if (widget.active)
             set_crop ("A4");
+    }
+
+    [GtkCallback]
+    private void a3_menuitem_toggled_cb (Gtk.CheckMenuItem widget)
+    {
+        if (widget.active)
+            set_crop ("A3");
     }
 
     [GtkCallback]
@@ -1068,7 +1079,7 @@ public class AppWindow : Gtk.ApplicationWindow
         {
             if (items[i] == '-')
             {
-                var a = new Gtk.Arrow (Gtk.ArrowType.RIGHT, Gtk.ShadowType.NONE);
+                var a = new Gtk.Label ("➤");
                 a.visible = true;
                 box.pack_start (a, false, false, 0);
                 page_box = null;
@@ -1284,8 +1295,8 @@ public class AppWindow : Gtk.ApplicationWindow
                                "logo-icon-name", "scanner",
                                "authors", authors,
                                "translator-credits", _("translator-credits"),
-                               "website", "https://launchpad.net/simple-scan",
-                               "copyright", "Copyright © 2009-2015 Canonical Ltd.",
+                               "website", "https://gitlab.gnome.org/GNOME/simple-scan",
+                               "copyright", "Copyright © 2009-2018 Canonical Ltd.",
                                "license", license,
                                "wrap-license", true,
                                null);
@@ -1561,34 +1572,24 @@ public class AppWindow : Gtk.ApplicationWindow
 
             app.add_action_entries (action_entries, this);
 
-            var appmenu = new Menu ();
-
-            var section = new Menu ();
-            appmenu.append_section (null, section);
-            section.append (_("Preferences"), "app.preferences");
-
-            section = new Menu ();
-            appmenu.append_section (null, section);
-            section.append (_("Keyboard Shortcuts"), "win.show-help-overlay");
-            section.append (_("Help"), "app.help");
-            section.append (_("About"), "app.about");
-            section.append (_("Quit"), "app.quit");
-
-            app.app_menu = appmenu;
-
-            app.add_accelerator ("<Ctrl>N", "app.new_document", null);
-            app.add_accelerator ("<Ctrl>S", "app.save", null);
-            app.add_accelerator ("<Ctrl>E", "app.email", null);
-            app.add_accelerator ("<Ctrl>P", "app.print", null);
-            app.add_accelerator ("F1", "app.help", null);
-            app.add_accelerator ("<Ctrl>Q", "app.quit", null);
+            app.set_accels_for_action ("app.new_document", { "<Ctrl>N" });
+            app.set_accels_for_action ("app.save", { "<Ctrl>S" });
+            app.set_accels_for_action ("app.email", { "<Ctrl>E" });
+            app.set_accels_for_action ("app.print", { "<Ctrl>P" });
+            app.set_accels_for_action ("app.help", { "F1" });
+            app.set_accels_for_action ("app.quit", { "<Ctrl>Q" });
 
             var gear_menu = new Menu ();
-            section = new Menu ();
+            var section = new Menu ();
             gear_menu.append_section (null, section);
             section.append (_("Email"), "app.email");
             section.append (_("Reorder Pages"), "app.reorder");
+            section = new Menu ();
+            gear_menu.append_section (null, section);
             section.append (_("Preferences"), "app.preferences");
+            section.append (_("Keyboard Shortcuts"), "win.show-help-overlay");
+            section.append (_("Help"), "app.help");
+            section.append (_("About"), "app.about");
             menu_button.set_menu_model (gear_menu);
         }
         app.add_window (this);

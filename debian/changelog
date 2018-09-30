@@ -1,35 +1,46 @@
-simple-scan (3.28.0-0ubuntu1) bionic; urgency=medium
+simple-scan (3.30.1.1-1) unstable; urgency=medium
 
-  * New upstream release:
-    - Updated translations
+  * New upstream release.
 
- -- Robert Ancell <robert.ancell@canonical.com>  Tue, 27 Mar 2018 12:04:53 +1300
+ -- Jörg Frings-Fürst <debian@jff.email>  Sun, 30 Sep 2018 11:18:11 +0200
 
-simple-scan (3.27.91-0ubuntu1) bionic; urgency=medium
+simple-scan (3.30.0-1) unstable; urgency=high
 
-  * New upstream release
-  * New debian/patches/0010-metadata.patch:
-    - Applied upstream
-  * debian/watch:
-    - Track 3.27
+  * New upstream release (Closes: #907932).
+  * Declare compliance with Debian Policy 4.2.1 (No changes needed).
 
- -- Robert Ancell <robert.ancell@canonical.com>  Tue, 20 Feb 2018 13:52:45 +1300
+ -- Jörg Frings-Fürst <debian@jff.email>  Tue, 04 Sep 2018 21:32:35 +0200
 
-simple-scan (3.26.3-0ubuntu1) bionic; urgency=medium
+simple-scan (3.28.1-1) unstable; urgency=medium
 
-  * New upstream stable release:
-    - Fix email sending failing with PDF attachments (LP: #1743096)
+  * New upstream release (Closes: #892944).
+  * Remove upstream applied patches:
+    - 0010-metadata.patch
+    - 0015-xdg-email.patch
+  * debian/copyright:
+    - refresh years.
+    - Use secure copyright format URI.
+    - Add new upstream authors.
+  * debian/control:
+    - Switch from python-scour to python3-scour since dh_scour is now provided
+      by python3-scour only as of scour 0.36-1.
+    - Add missing Build-Depends to use all features:
+      + libwebp-dev
+      + python3-cairo
+      + python3-gi
+      + python3-gi-cairo
+    - Switch Vcs-* to new location.
+    - Switch to new homepage.
+    - Remove unneeded build depends versions.
+  * Declare compliance with Debian Policy 4.1.5 (No changes needed).
+  * Refresh debian/upstream/metadata.
+  * Some buildsystem changes (Closes: #881934):
+    - debian/rules: Add gnome and dh_translation handling.
+    - debian/control: Refresh build depends.
+    - debian/source_simple-scan.py: Report versions for more scanner drivers.
+    Thanks to Jeremy Bicha <jbicha@debian.org>
 
- -- Robert Ancell <robert.ancell@canonical.com>  Mon, 22 Jan 2018 15:42:39 +1300
-
-simple-scan (3.26.2-1ubuntu1) bionic; urgency=medium
-
-  * Sync with Debian. Remaining changes:
-    - Update apport hook to report versions for more scanner drivers
-    - Use dh_gnome and add workaround for Ubuntu translations issue
-    - Several updates to Build-Depends (Closes: #881934)
-
- -- Jeremy Bicha <jbicha@ubuntu.com>  Thu, 16 Nov 2017 14:26:17 -0500
+ -- Jörg Frings-Fürst <debian@jff.email>  Mon, 16 Jul 2018 10:42:36 +0200
 
 simple-scan (3.26.2-1) unstable; urgency=medium
 

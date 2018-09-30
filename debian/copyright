@@ -1,17 +1,27 @@
-Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Simple Scan
 Upstream-Contact: Robert Ancell <robert.ancell@canonical.com>
-Source: https://launchpad.net/simple-scan/+download
+Source: https://gitlab.gnome.org/GNOME/simple-scan
 
 Files: *
-Copyright: 2009-2016 Canonical Ltd
+Copyright: 2009-2018 Canonical Ltd
+License: GPL-3+
+
+Files: src/screensaver.vala
+       src/libwebpmux.vapi
+       src/libwebp.vapi
+Copyright: 2017      Stéphane Fillion
+License: GPL-3+
+
+Files: src/autosave-manager.vala
+Copyright: 2011      Timo Kluck
+           2011      Robert Ancell <robert.ancell@canonical.com>
 License: GPL-3+
 
 Files: debian/*
-Copyright:
- 2009-2012 Alessio Treglia <alessio@debian.org>
- 2009      Robert Ancell <robert.ancell@canonical.com>
- 2014-2017 Jörg Frings-Fürst <debian@jff.email>
+Copyright: 2009-2012 Alessio Treglia <alessio@debian.org>
+           2009      Robert Ancell <robert.ancell@canonical.com>
+           2014-2018 Jörg Frings-Fürst <debian@jff.email>
 License: GPL-3+
 
 License: GPL-3+

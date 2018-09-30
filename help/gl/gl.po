@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: simple-scan master\n"
 "POT-Creation-Date: 2018-02-23 12:28+0000\n"
-"PO-Revision-Date: 2018-02-24 12:52+0100\n"
+"PO-Revision-Date: 2018-03-14 23:52+0100\n"
 "Last-Translator: marcos <marcoslansgarza@gmail.com>\n"
 "Language-Team: Galician <gnome-gl-list@gnome.org>\n"
 "Language: gl\n"
@@ -19,8 +19,7 @@ msgstr ""
 msgctxt "_"
 msgid "translator-credits"
 msgstr ""
-"Tradutores\n"
-"Marcos Lans, 2018"
+"Marcos Lans <marcoslansgarza@gmail.com>, 2018"
 
 #. (itstool) path: page/title
 #: C/adf.page:9
