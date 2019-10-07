@@ -1,5 +1,5 @@
 project ('simple-scan', ['vala', 'c'],
-         version: '3.30.1.1',
+         version: '3.34.1',
          license: 'GPLv3+',
          default_options: [
              'warning_level=1',
@@ -9,6 +9,8 @@ project ('simple-scan', ['vala', 'c'],
 
 gnome = import ('gnome')
 i18n = import ('i18n')
+
+app_id = 'org.gnome.SimpleScan'
 
 # Paths
 mandir = join_paths (get_option ('prefix'), get_option ('mandir'))

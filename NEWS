@@ -1,10 +1,84 @@
-Overview of changes in simple-scan 3.30.1.1
+Overview of changes in simple-scan 3.34.1
 
-  * Rebuild tarball as 3.30 releases have out of date content
+  * Updated translations
 
-Overview of changes in simple-scan 3.30.1
+Overview of changes in simple-scan 3.34.0
 
+  * Updated translations
+
+Overview of changes in simple-scan 3.33.92
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.33.91
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.33.90
+
+  * Change (user visible) name to "Document Scanner"
+  * Updated icon
+
+Overview of changes in simple-scan 3.33.4
+
+  * Reinstate shortcut keys that stopped working in 3.32
+  * Fix page delay preferences not working correctly
+
+Overview of changes in simple-scan 3.33.3
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.33.2
+
+  * Make icon landscape
+
+Overview of changes in simple-scan 3.33.1
+
+  * Use new app icon
+
+Overview of changes in simple-scan 3.32.0
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.31.92
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.31.91
+
+  * Fix save overwriting existing file when user decided not to.
+  * Make save button insensitive while saving
+
+Overview of changes in simple-scan 3.31.90.1
+
+  * Fix crash when detecting scanners
+
+Overview of changes in simple-scan 3.31.90
+
+  * Support non-standard Epson ADF scanner options
+
+Overview of changes in simple-scan 3.31.4
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.31.3
+
+  * Updated translations
+
+Overview of changes in simple-scan 3.31.2
+
+  * Use Gtk.FileChooserNative for save dialog so works in sandboxed environments
+  * Use GLib.List.deep_copy() to fix type-argument mismatch
+
+Overview of changes in simple-scan 3.31.1
+
+  * Replace scan menu with a popdown
+  * Make ActionBar buttons wide to match design
+  * Drop legacy toolbar support
   * Update homepage from Launchpad to gitlab.gnome.org
+  * Remove some GTK+ code that isn't present in GTK+ 4
+  * Update About menu item to new standard name
+  * Make about dialog app name translatable
 
 Overview of changes in simple-scan 3.30.0
 

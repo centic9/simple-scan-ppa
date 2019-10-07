@@ -1,3 +1,23 @@
+simple-scan (3.34.1-1) unstable; urgency=medium
+
+  * New upstream release:
+    - Add libxml2-utils to Build-Depends.
+  * Declare compliance with Debian Policy 4.4.1 (No changes needed).
+  * debian/control:
+    - Add Rules-Requires-Root: binary-targets.
+
+ -- Jörg Frings-Fürst <debian@jff.email>  Mon, 07 Oct 2019 09:04:29 +0200
+
+simple-scan (3.32.2.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Migrate to debhelper 12:
+    - Change debian/compat to 12.
+    - Change debhelper version in debian/control to >= 12.
+  * Declare compliance with Debian Policy 4.4.0 (No changes needed).
+
+ -- Jörg Frings-Fürst <debian@jff.email>  Thu, 11 Jul 2019 21:03:54 +0200
+
 simple-scan (3.30.1.1-1) unstable; urgency=medium
 
   * New upstream release.
@@ -32,7 +52,6 @@ simple-scan (3.28.1-1) unstable; urgency=medium
     - Switch Vcs-* to new location.
     - Switch to new homepage.
     - Remove unneeded build depends versions.
-  * Declare compliance with Debian Policy 4.1.5 (No changes needed).
   * Refresh debian/upstream/metadata.
   * Some buildsystem changes (Closes: #881934):
     - debian/rules: Add gnome and dh_translation handling.

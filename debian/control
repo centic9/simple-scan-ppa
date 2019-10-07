@@ -2,9 +2,10 @@ Source: simple-scan
 Section: gnome
 Priority: optional
 Maintainer: Jörg Frings-Fürst <debian@jff.email>
-Standards-Version: 4.2.1
+Standards-Version: 4.4.1
+Rules-Requires-Root: binary-targets
 Build-Depends:
- debhelper (>= 11),
+ debhelper (>= 12),
  gettext,
  gnome-pkg-tools,
  itstool,
@@ -17,6 +18,7 @@ Build-Depends:
  libpackagekit-glib2-dev,
  libsane-dev,
  libwebp-dev,
+ libxml2-utils,
  meson,
  python3-cairo,
  python3-gi,

@@ -18,27 +18,28 @@ public class AppWindow : Gtk.ApplicationWindow
 {
     private const GLib.ActionEntry[] action_entries =
     {
-        { "new_document", new_document_activate_cb },
-        { "reorder", reorder_document_activate_cb },
+        { "new_document", new_document_cb },
+        { "scan_single", scan_single_cb },
+        { "scan_adf", scan_adf_cb },
+        { "scan_batch", scan_batch_cb },
+        { "scan_stop", scan_stop_cb },
+        { "reorder", reorder_document_cb },
         { "save", save_document_activate_cb },
-        { "email", email_document_activate_cb },
-        { "print", print_document_activate_cb },
-        { "preferences", preferences_activate_cb },
-        { "help", help_contents_activate_cb },
-        { "about", about_activate_cb },
-        { "quit", quit_activate_cb }
+        { "email", email_document_cb },
+        { "print", print_document_cb },
+        { "preferences", preferences_cb },
+        { "help", help_cb },
+        { "about", about_cb },
+        { "quit", quit_cb }
     };
 
     private Settings settings;
+    private ScanType scan_type = ScanType.SINGLE;
 
     private PreferencesDialog preferences_dialog;
 
     [GtkChild]
     private Gtk.HeaderBar header_bar;
-    [GtkChild]
-    private Gtk.MenuBar menubar;
-    [GtkChild]
-    private Gtk.Toolbar toolbar;
     [GtkChild]
     private Gtk.Menu page_menu;
     [GtkChild]
@@ -76,21 +77,9 @@ public class AppWindow : Gtk.ApplicationWindow
     [GtkChild]
     private Gtk.MenuItem crop_rotate_menuitem;
     [GtkChild]
-    private Gtk.MenuItem save_menuitem;
-    [GtkChild]
-    private Gtk.MenuItem email_menuitem;
-    [GtkChild]
-    private Gtk.MenuItem print_menuitem;
-    [GtkChild]
     private Gtk.MenuItem copy_to_clipboard_menuitem;
     [GtkChild]
     private Gtk.Button save_button;
-    [GtkChild]
-    private Gtk.ToolButton save_toolbutton;
-    [GtkChild]
-    private Gtk.MenuItem stop_scan_menuitem;
-    [GtkChild]
-    private Gtk.ToolButton stop_toolbutton;
     [GtkChild]
     private Gtk.Button stop_button;
     [GtkChild]
@@ -101,24 +90,23 @@ public class AppWindow : Gtk.ApplicationWindow
     private Gtk.Button delete_button;
 
     [GtkChild]
-    private Gtk.RadioMenuItem text_button_menuitem;
+    private Gtk.Image scan_options_image;
     [GtkChild]
-    private Gtk.RadioMenuItem text_button_hb_menuitem;
+    private Gtk.RadioButton scan_single_radio;
     [GtkChild]
-    private Gtk.RadioMenuItem text_menuitem;
+    private Gtk.RadioButton scan_adf_radio;
     [GtkChild]
-    private Gtk.RadioMenuItem photo_button_menuitem;
+    private Gtk.RadioButton scan_batch_radio;
     [GtkChild]
-    private Gtk.RadioMenuItem photo_button_hb_menuitem;
+    private Gtk.RadioButton text_radio;
     [GtkChild]
-    private Gtk.RadioMenuItem photo_menuitem;
+    private Gtk.RadioButton photo_radio;
 
     [GtkChild]
     private Gtk.MenuButton menu_button;
 
+    private bool have_devices = false;
     private string? missing_driver = null;
-
-    private Gtk.FileChooserDialog? save_dialog;
 
     public Book book { get; private set; }
     private bool book_needs_saving;
@@ -153,8 +141,6 @@ public class AppWindow : Gtk.ApplicationWindow
             stack.set_visible_child_name ("document");
             page_delete_menuitem.sensitive = !value;
             delete_button.sensitive = !value;
-            stop_scan_menuitem.sensitive = value;
-            stop_toolbutton.sensitive = value;
             scan_button.visible = !value;
             stop_button.visible = value;
         }
@@ -256,20 +242,22 @@ public class AppWindow : Gtk.ApplicationWindow
         password = authorize_dialog.get_password ();
     }
 
-    public void set_scan_devices (List<ScanDevice> devices, string? missing_driver = null)
+    private void update_scan_status ()
     {
-        this.missing_driver = missing_driver;
-
-        preferences_dialog.set_scan_devices (devices);
-
-        if (devices != null)
+        if (!have_devices)
+        {
+            status_primary_label.set_text (/* Label shown when searching for scanners */
+                                           _("Searching for Scanners…"));
+            status_secondary_label.visible = false;
+        }
+        else if (selected_device != null)
         {
             status_primary_label.set_text (/* Label shown when detected a scanner */
                                            _("Ready to Scan"));
             status_secondary_label.set_text (preferences_dialog.get_selected_device_label ());
             status_secondary_label.visible = true;
         }
-        else if (missing_driver != null)
+        else if (this.missing_driver != null)
         {
             status_primary_label.set_text (/* Warning displayed when no drivers are installed but a compatible scanner is detected */
                                            _("Additional software needed"));
@@ -287,7 +275,15 @@ public class AppWindow : Gtk.ApplicationWindow
         }
     }
 
-    private string choose_file_location ()
+    public void set_scan_devices (List<ScanDevice> devices, string? missing_driver = null)
+    {
+        have_devices = true;
+        this.missing_driver = missing_driver;
+        preferences_dialog.set_scan_devices (devices);
+        update_scan_status ();
+    }
+
+    private string? choose_file_location ()
     {
         /* Get directory to save to */
         string? directory = null;
@@ -296,13 +292,12 @@ public class AppWindow : Gtk.ApplicationWindow
         if (directory == null || directory == "")
             directory = Environment.get_user_special_dir (UserDirectory.DOCUMENTS);
 
-        save_dialog = new Gtk.FileChooserDialog (/* Save dialog: Dialog title */
-                                                 _("Save As…"),
-                                                 this,
-                                                 Gtk.FileChooserAction.SAVE,
-                                                 _("_Cancel"), Gtk.ResponseType.CANCEL,
-                                                 _("_Save"), Gtk.ResponseType.ACCEPT,
-                                                 null);
+        var save_dialog = new Gtk.FileChooserNative (/* Save dialog: Dialog title */
+                                                     _("Save As…"),
+                                                     this,
+                                                     Gtk.FileChooserAction.SAVE,
+                                                     _("_Save"),
+                                                     _("_Cancel"));
         save_dialog.local_only = false;
         if (book_uri != null)
             save_dialog.set_uri (book_uri);
@@ -365,18 +360,18 @@ public class AppWindow : Gtk.ApplicationWindow
         /* Label in save dialog beside combo box to choose file format (PDF, JPEG, PNG, WEBP) */
         var label = new Gtk.Label (_("File format:"));
         label.visible = true;
-        box.pack_start (label, false, false, 0);
+        box.add (label);
 
         var file_type_combo = new Gtk.ComboBox.with_model (file_type_store);
         file_type_combo.visible = true;
         var renderer = new Gtk.CellRendererText ();
         file_type_combo.pack_start (renderer, true);
         file_type_combo.add_attribute (renderer, "text", 0);
-        box.pack_start (file_type_combo, false, true, 0);
+        box.add (file_type_combo);
 
         /* Label in save dialog beside compression slider */
         var quality_label = new Gtk.Label (_("Compression:"));
-        box.pack_start (quality_label, false, false, 0);
+        box.add (quality_label);
 
         var quality_adjustment = new Gtk.Adjustment (75, 0, 100, 1, 10, 0);
         var quality_scale = new Gtk.Scale (Gtk.Orientation.HORIZONTAL, quality_adjustment);
@@ -388,7 +383,7 @@ public class AppWindow : Gtk.ApplicationWindow
         quality_scale.add_mark (100, Gtk.PositionType.BOTTOM, null);
         quality_adjustment.value = settings.get_int ("jpeg-quality");
         quality_adjustment.value_changed.connect (() => { settings.set_int ("jpeg-quality", (int) quality_adjustment.value); });
-        box.pack_start (quality_scale, false, false, 0);
+        box.add (quality_scale);
 
         file_type_combo.set_active (0);
         file_type_combo.changed.connect (() =>
@@ -412,12 +407,14 @@ public class AppWindow : Gtk.ApplicationWindow
             quality_scale.visible = quality_label.visible = (extension != ".png");
         });
 
-        string? uri = null;
         while (true)
         {
             var response = save_dialog.run ();
             if (response != Gtk.ResponseType.ACCEPT)
-                break;
+            {
+                save_dialog.destroy ();
+                return null;
+            }
 
             var extension = "";
             Gtk.TreeIter i;
@@ -431,7 +428,7 @@ public class AppWindow : Gtk.ApplicationWindow
             if (extension_index < 0)
                 path += extension;
 
-            uri = File.new_for_path (path).get_uri ();
+            var uri = File.new_for_path (path).get_uri ();
 
             /* Check the file(s) don't already exist */
             var files = new List<File> ();
@@ -448,16 +445,14 @@ public class AppWindow : Gtk.ApplicationWindow
             else
                 files.append (File.new_for_uri (uri));
 
-            if (check_overwrite (save_dialog, files))
-                break;
+            if (check_overwrite (save_dialog.transient_for, files))
+            {
+                settings.set_string ("save-directory", save_dialog.get_current_folder ());
+                save_dialog.destroy ();
+                return uri;
+            }
         }
 
-        settings.set_string ("save-directory", save_dialog.get_current_folder ());
-
-        save_dialog.destroy ();
-        save_dialog = null;
-
-        return uri;
     }
 
     private bool check_overwrite (Gtk.Window parent, List<File> files)
@@ -514,6 +509,7 @@ public class AppWindow : Gtk.ApplicationWindow
         var progress_bar =  new CancellableProgressBar (_("Saving"), cancellable);
         action_bar.pack_end (progress_bar);
         progress_bar.visible = true;
+        save_button.sensitive = false;
         try
         {
             yield book.save_async (format, settings.get_int ("jpeg-quality"), file, (fraction) =>
@@ -523,6 +519,7 @@ public class AppWindow : Gtk.ApplicationWindow
         }
         catch (Error e)
         {
+            save_button.sensitive = true;
             progress_bar.destroy ();
             warning ("Error saving file: %s", e.message);
             show_error_dialog (/* Title of error dialog when save failed */
@@ -530,6 +527,7 @@ public class AppWindow : Gtk.ApplicationWindow
                                e.message);
             return false;
         }
+        save_button.sensitive = true;
         progress_bar.destroy_with_delay (500);
 
         book_needs_saving = false;
@@ -576,14 +574,9 @@ public class AppWindow : Gtk.ApplicationWindow
         book.clear ();
         book_needs_saving = false;
         book_uri = null;
-        save_menuitem.sensitive = false;
-        email_menuitem.sensitive = false;
-        print_menuitem.sensitive = false;
         save_button.sensitive = false;
-        save_toolbutton.sensitive = false;
         copy_to_clipboard_menuitem.sensitive = false;
-        status_primary_label.set_text (/* Label shown when detected a scanner */
-                                       _("Ready to Scan"));
+        update_scan_status ();
         stack.set_visible_child_name ("startup");
     }
 
@@ -616,15 +609,85 @@ public class AppWindow : Gtk.ApplicationWindow
         return false;
     }
 
-    [GtkCallback]
-    private void new_button_clicked_cb (Gtk.Widget widget)
+    private void new_document_cb ()
     {
-        new_document();
+        new_document ();
     }
 
-    public void new_document_activate_cb ()
+    private void scan (ScanOptions options)
     {
-        new_document();
+        status_primary_label.set_text (/* Label shown when scan started */
+                                       _("Contacting scanner…"));
+        start_scan (selected_device, options);
+    }
+
+    private void scan_single_cb ()
+    {
+        var options = make_scan_options ();
+        options.type = ScanType.SINGLE;
+        scan (options);
+    }
+
+    private void scan_adf_cb ()
+    {
+        var options = make_scan_options ();
+        options.type = ScanType.ADF_BOTH;
+        options.type = preferences_dialog.get_page_side ();
+        scan (options);
+    }
+
+    private void scan_batch_cb ()
+    {
+        var options = make_scan_options ();
+        options.type = ScanType.BATCH;
+        scan (options);
+    }
+
+    private void scan_stop_cb ()
+    {
+        stop_scan ();
+    }
+
+    private void set_scan_type (ScanType scan_type)
+    {
+        this.scan_type = scan_type;
+
+        switch (scan_type)
+        {
+        case ScanType.SINGLE:
+            scan_single_radio.active = true;
+            scan_options_image.icon_name = "scanner-symbolic";
+            break;
+        case ScanType.ADF_BOTH:
+            scan_adf_radio.active = true;
+            scan_options_image.icon_name = "scan-type-adf-symbolic";
+            break;
+        case ScanType.BATCH:
+            scan_batch_radio.active = true;
+            scan_options_image.icon_name = "scan-type-batch-symbolic";
+            break;
+        }
+    }
+
+    [GtkCallback]
+    private void scan_single_radio_toggled_cb (Gtk.ToggleButton button)
+    {
+        if (button.active)
+            set_scan_type (ScanType.SINGLE);
+    }
+
+    [GtkCallback]
+    private void scan_adf_radio_toggled_cb (Gtk.ToggleButton button)
+    {
+        if (button.active)
+            set_scan_type (ScanType.ADF_BOTH);
+    }
+
+    [GtkCallback]
+    private void scan_batch_radio_toggled_cb (Gtk.ToggleButton button)
+    {
+        if (button.active)
+            set_scan_type (ScanType.BATCH);
     }
 
     private void set_document_hint (string document_hint, bool save = false)
@@ -633,15 +696,11 @@ public class AppWindow : Gtk.ApplicationWindow
 
         if (document_hint == "text")
         {
-            text_button_menuitem.active = true;
-            text_button_hb_menuitem.active = true;
-            text_menuitem.active = true;
+            text_radio.active = true;
         }
         else if (document_hint == "photo")
         {
-            photo_button_menuitem.active = true;
-            photo_button_hb_menuitem.active = true;
-            photo_menuitem.active = true;
+            photo_radio.active = true;
         }
 
         if (save)
@@ -649,16 +708,16 @@ public class AppWindow : Gtk.ApplicationWindow
     }
 
     [GtkCallback]
-    private void text_menuitem_toggled_cb (Gtk.CheckMenuItem widget)
+    private void text_radio_toggled_cb (Gtk.ToggleButton button)
     {
-        if (widget.active)
+        if (button.active)
             set_document_hint ("text", true);
     }
 
     [GtkCallback]
-    private void photo_menuitem_toggled_cb (Gtk.CheckMenuItem widget)
+    private void photo_radio_toggled_cb (Gtk.ToggleButton button)
     {
-        if (widget.active)
+        if (button.active)
             set_document_hint ("photo", true);
     }
 
@@ -689,10 +748,10 @@ public class AppWindow : Gtk.ApplicationWindow
     private void scan_button_clicked_cb (Gtk.Widget widget)
     {
         var options = make_scan_options ();
-        options.type = ScanType.SINGLE;
-        status_primary_label.set_text (/* Label shown when scan started */
-                                       _("Contacting scanner…"));
-        start_scan (selected_device, options);
+        options.type = scan_type;
+        if (options.type == ScanType.ADF_BOTH)
+            options.type = preferences_dialog.get_page_side ();
+        scan (options);
     }
 
     [GtkCallback]
@@ -701,34 +760,7 @@ public class AppWindow : Gtk.ApplicationWindow
         stop_scan ();
     }
 
-    [GtkCallback]
-    private void continuous_scan_button_clicked_cb (Gtk.Widget widget)
-    {
-        if (scanning)
-            stop_scan ();
-        else
-        {
-            var options = make_scan_options ();
-            options.type = preferences_dialog.get_page_side ();
-            start_scan (selected_device, options);
-        }
-    }
-
-    [GtkCallback]
-    private void batch_button_clicked_cb (Gtk.Widget widget)
-    {
-        var options = make_scan_options ();
-        options.type = ScanType.BATCH;
-        start_scan (selected_device, options);
-    }
-
-    [GtkCallback]
-    private void preferences_button_clicked_cb (Gtk.Widget widget)
-    {
-        preferences_dialog.present ();
-    }
-
-    public void preferences_activate_cb ()
+    private void preferences_cb ()
     {
         preferences_dialog.present ();
     }
@@ -975,7 +1007,7 @@ public class AppWindow : Gtk.ApplicationWindow
         dialog.modal = true;
         dialog.border_width = 12;
         /* Title of dialog to reorder pages */
-        dialog.title = _("Reorder Pages");
+        dialog.title = C_("dialog title", "Reorder Pages");
         dialog.set_transient_for (this);
         dialog.key_press_event.connect ((e) =>
         {
@@ -1039,13 +1071,7 @@ public class AppWindow : Gtk.ApplicationWindow
         dialog.present ();
     }
 
-    public void reorder_document_activate_cb ()
-    {
-        reorder_document ();
-    }
-
-    [GtkCallback]
-    private void reorder_menuitem_activate_cb (Gtk.Widget widget)
+    private void reorder_document_cb ()
     {
         reorder_document ();
     }
@@ -1060,11 +1086,13 @@ public class AppWindow : Gtk.ApplicationWindow
 
         var label = new Gtk.Label (text);
         label.visible = true;
-        vbox.pack_start (label, true, true, 0);
+        label.vexpand = true;
+        vbox.add (label);
 
         var rb = make_reorder_box (items);
         rb.visible = true;
-        vbox.pack_start (rb, true, true, 0);
+        rb.vexpand = true;
+        vbox.add (rb);
 
         return b;
     }
@@ -1081,7 +1109,7 @@ public class AppWindow : Gtk.ApplicationWindow
             {
                 var a = new Gtk.Label ("➤");
                 a.visible = true;
-                box.pack_start (a, false, false, 0);
+                box.add (a);
                 page_box = null;
                 continue;
             }
@@ -1096,7 +1124,7 @@ public class AppWindow : Gtk.ApplicationWindow
             {
                 page_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 3);
                 page_box.visible = true;
-                box.pack_start (page_box, false, false, 0);
+                box.add (page_box);
             }
 
             /* Get colours for each page (from Tango palette) */
@@ -1133,7 +1161,7 @@ public class AppWindow : Gtk.ApplicationWindow
 
             var icon = new PageIcon ("%c".printf (items[i]), r, g, b);
             icon.visible = true;
-            page_box.pack_start (icon, false, false, 0);
+            page_box.add (icon);
         }
 
         return box;
@@ -1183,13 +1211,7 @@ public class AppWindow : Gtk.ApplicationWindow
         context.paint ();
     }
 
-    [GtkCallback]
-    private void email_button_clicked_cb (Gtk.Widget widget)
-    {
-        email_document_async.begin ();
-    }
-
-    public void email_document_activate_cb ()
+    private void email_document_cb ()
     {
         email_document_async.begin ();
     }
@@ -1238,13 +1260,7 @@ public class AppWindow : Gtk.ApplicationWindow
         print.draw_page.disconnect (draw_page);
     }
 
-    [GtkCallback]
-    private void print_button_clicked_cb (Gtk.Widget widget)
-    {
-        print_document ();
-    }
-
-    public void print_document_activate_cb ()
+    private void print_document_cb ()
     {
         print_document ();
     }
@@ -1263,13 +1279,7 @@ public class AppWindow : Gtk.ApplicationWindow
         }
     }
 
-    [GtkCallback]
-    private void help_contents_menuitem_activate_cb (Gtk.Widget widget)
-    {
-        launch_help ();
-    }
-
-    public void help_contents_activate_cb ()
+    private void help_cb ()
     {
         launch_help ();
     }
@@ -1282,17 +1292,17 @@ public class AppWindow : Gtk.ApplicationWindow
         string license = _("This program is free software: you can redistribute it and/or modify\nit under the terms of the GNU General Public License as published by\nthe Free Software Foundation, either version 3 of the License, or\n(at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License\nalong with this program.  If not, see <http://www.gnu.org/licenses/>.");
 
         /* Title of about dialog */
-        string title = _("About Simple Scan");
+        string title = _("About Document Scanner");
 
         /* Description of program */
         string description = _("Simple document scanning tool");
 
         Gtk.show_about_dialog (this,
                                "title", title,
-                               "program-name", "Simple Scan",
+                               "program-name", _("Document Scanner"),
                                "version", VERSION,
                                "comments", description,
-                               "logo-icon-name", "scanner",
+                               "logo-icon-name", "org.gnome.SimpleScan",
                                "authors", authors,
                                "translator-credits", _("translator-credits"),
                                "website", "https://gitlab.gnome.org/GNOME/simple-scan",
@@ -1302,13 +1312,7 @@ public class AppWindow : Gtk.ApplicationWindow
                                null);
     }
 
-    [GtkCallback]
-    private void about_menuitem_activate_cb (Gtk.Widget widget)
-    {
-        show_about ();
-    }
-
-    public void about_activate_cb ()
+    private void about_cb ()
     {
         show_about ();
     }
@@ -1332,13 +1336,7 @@ public class AppWindow : Gtk.ApplicationWindow
         });
     }
 
-    [GtkCallback]
-    private void quit_menuitem_activate_cb (Gtk.Widget widget)
-    {
-        on_quit ();
-    }
-
-    public void quit_activate_cb ()
+    private void quit_cb ()
     {
         on_quit ();
     }
@@ -1395,14 +1393,16 @@ public class AppWindow : Gtk.ApplicationWindow
         var label = new Gtk.Label (message);
         label.visible = true;
         label.xalign = 0f;
-        dialog.get_content_area ().pack_start (label, true, true, 0);
+        label.vexpand = true;
+        dialog.get_content_area ().add (label);
 
         var instructions_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
         instructions_box.visible = true;
-        dialog.get_content_area ().pack_start (instructions_box, true, true, 0);
+        instructions_box.vexpand = true;
+        dialog.get_content_area ().add (instructions_box);
 
         var stack = new Gtk.Stack ();
-        instructions_box.pack_start (stack, false, false, 0);
+        instructions_box.add (stack);
 
         var spinner = new Gtk.Spinner ();
         spinner.visible = true;
@@ -1416,14 +1416,15 @@ public class AppWindow : Gtk.ApplicationWindow
         instructions_label.visible = true;
         instructions_label.xalign = 0f;
         instructions_label.use_markup = true;
-        instructions_box.pack_start (instructions_label, false, false, 0);
+        instructions_box.add (instructions_label);
 
         label = new Gtk.Label (/* Message in driver install dialog */
-                               _("Once installed you will need to restart Simple Scan."));
+                               _("Once installed you will need to restart this app."));
         label.visible = true;
         label.xalign = 0f;
+        label.vexpand = true;
         dialog.get_content_area ().border_width = 12;
-        dialog.get_content_area ().pack_start (label, true, true, 0);
+        dialog.get_content_area ().add (label);
 
         if (packages_to_install.length > 0)
         {
@@ -1534,64 +1535,52 @@ public class AppWindow : Gtk.ApplicationWindow
 
     private void book_changed_cb (Book book)
     {
-        save_menuitem.sensitive = true;
-        email_menuitem.sensitive = true;
-        print_menuitem.sensitive = true;
         save_button.sensitive = true;
-        save_toolbutton.sensitive = true;
         book_needs_saving = true;
         copy_to_clipboard_menuitem.sensitive = true;
     }
 
     private void load ()
     {
-        var use_header_bar = !is_traditional_desktop ();
-
-        preferences_dialog = new PreferencesDialog (settings, use_header_bar);
+        preferences_dialog = new PreferencesDialog (settings);
         preferences_dialog.delete_event.connect (() => { return true; });
         preferences_dialog.response.connect (() => { preferences_dialog.visible = false; });
 
-        Gtk.IconTheme.get_default ().append_search_path (ICON_DIR);
-
-        Gtk.Window.set_default_icon_name ("scanner");
+        Gtk.Window.set_default_icon_name ("org.gnome.SimpleScan");
 
         var app = Application.get_default () as Gtk.Application;
 
-        if (!use_header_bar)
-        {
-            set_titlebar (null);
-            menubar.visible = true;
-            toolbar.visible = true;
-        }
-        else
-        {
-            /* Set HeaderBar title here because Glade doesn't keep it translated */
-            /* https://bugzilla.gnome.org/show_bug.cgi?id=782753 */
-            /* Title of scan window */
-            header_bar.title = _("Simple Scan");
+        /* Set HeaderBar title here because Glade doesn't keep it translated */
+        /* https://bugzilla.gnome.org/show_bug.cgi?id=782753 */
+        /* Title of scan window */
+        header_bar.title = _("Document Scanner");
 
-            app.add_action_entries (action_entries, this);
+        app.add_action_entries (action_entries, this);
 
-            app.set_accels_for_action ("app.new_document", { "<Ctrl>N" });
-            app.set_accels_for_action ("app.save", { "<Ctrl>S" });
-            app.set_accels_for_action ("app.email", { "<Ctrl>E" });
-            app.set_accels_for_action ("app.print", { "<Ctrl>P" });
-            app.set_accels_for_action ("app.help", { "F1" });
-            app.set_accels_for_action ("app.quit", { "<Ctrl>Q" });
+        app.set_accels_for_action ("app.new_document", { "<Ctrl>N" });
+        app.set_accels_for_action ("app.scan_single", { "<Ctrl>1" });
+        app.set_accels_for_action ("app.scan_adf", { "<Ctrl>F" });
+        app.set_accels_for_action ("app.scan_batch", { "<Ctrl>M" });
+        app.set_accels_for_action ("app.scan_stop", { "Escape" });
+        app.set_accels_for_action ("app.save", { "<Ctrl>S" });
+        app.set_accels_for_action ("app.email", { "<Ctrl>E" });
+        app.set_accels_for_action ("app.print", { "<Ctrl>P" });
+        app.set_accels_for_action ("app.help", { "F1" });
+        app.set_accels_for_action ("app.quit", { "<Ctrl>Q" });
 
-            var gear_menu = new Menu ();
-            var section = new Menu ();
-            gear_menu.append_section (null, section);
-            section.append (_("Email"), "app.email");
-            section.append (_("Reorder Pages"), "app.reorder");
-            section = new Menu ();
-            gear_menu.append_section (null, section);
-            section.append (_("Preferences"), "app.preferences");
-            section.append (_("Keyboard Shortcuts"), "win.show-help-overlay");
-            section.append (_("Help"), "app.help");
-            section.append (_("About"), "app.about");
-            menu_button.set_menu_model (gear_menu);
-        }
+        var gear_menu = new Menu ();
+        var section = new Menu ();
+        gear_menu.append_section (null, section);
+        section.append (_("Email"), "app.email");
+        section.append (C_("menu", "Reorder Pages"), "app.reorder");
+        section = new Menu ();
+        gear_menu.append_section (null, section);
+        section.append (_("Preferences"), "app.preferences");
+        section.append (_("Keyboard Shortcuts"), "win.show-help-overlay");
+        section.append (_("Help"), "app.help");
+        section.append (_("About Document Scanner"), "app.about");
+        menu_button.set_menu_model (gear_menu);
+
         app.add_window (this);
 
         /* Populate ActionBar (not supported in Glade) */
@@ -1599,7 +1588,7 @@ public class AppWindow : Gtk.ApplicationWindow
         var button = new Gtk.Button.with_label (/* Label on new document button */
                                                _("Start Again…"));
         button.visible = true;
-        button.clicked.connect (new_button_clicked_cb);
+        button.clicked.connect (new_document_cb);
         action_bar.pack_start (button);
 
         var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 10);
@@ -1609,26 +1598,32 @@ public class AppWindow : Gtk.ApplicationWindow
         var rotate_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
         rotate_box.get_style_context ().add_class (Gtk.STYLE_CLASS_LINKED);
         rotate_box.visible = true;
-        box.pack_start (rotate_box, false, true, 0);
+        box.add (rotate_box);
 
         button = new Gtk.Button.from_icon_name ("object-rotate-left-symbolic");
         button.visible = true;
+        button.image.margin_start = 18;
+        button.image.margin_end = 18;
         /* Tooltip for rotate left (counter-clockwise) button */
         button.tooltip_text = _("Rotate the page to the left (counter-clockwise)");
         button.clicked.connect (rotate_left_button_clicked_cb);
-        rotate_box.pack_start (button, false, true, 0);
+        rotate_box.add (button);
 
         button = new Gtk.Button.from_icon_name ("object-rotate-right-symbolic");
         button.visible = true;
+        button.image.margin_start = 18;
+        button.image.margin_end = 18;
         /* Tooltip for rotate right (clockwise) button */
         button.tooltip_text = _("Rotate the page to the right (clockwise)");
         button.clicked.connect (rotate_right_button_clicked_cb);
-        rotate_box.pack_start (button, false, true, 0);
+        rotate_box.add (button);
 
         crop_button = new Gtk.ToggleButton ();
         crop_button.visible = true;
         var image = new Gtk.Image.from_icon_name ("edit-cut-symbolic", Gtk.IconSize.BUTTON);
         image.visible = true;
+        image.margin_start = 18;
+        image.margin_end = 18;
         crop_button.add (image);
         /* Tooltip for crop button */
         crop_button.tooltip_text = _("Crop the selected page");
@@ -1642,14 +1637,16 @@ public class AppWindow : Gtk.ApplicationWindow
             else
                 no_crop_menuitem.active = true;
         });
-        box.pack_start (crop_button, false, true, 0);
+        box.add (crop_button);
 
         delete_button = new Gtk.Button.from_icon_name ("user-trash-symbolic");
         delete_button.visible = true;
+        delete_button.image.margin_start = 18;
+        delete_button.image.margin_end = 18;
         /* Tooltip for delete button */
         delete_button.tooltip_text = _("Delete the selected page");
         delete_button.clicked.connect (() => { book_view.book.delete_page (book_view.selected_page); });
-        box.pack_start (delete_button, false, true, 0);
+        box.add (delete_button);
 
         var document_type = settings.get_string ("document-type");
         if (document_type != null)
@@ -1657,7 +1654,8 @@ public class AppWindow : Gtk.ApplicationWindow
 
         book_view = new BookView (book);
         book_view.border_width = 18;
-        main_vbox.pack_start (book_view, true, true, 0);
+        book_view.vexpand = true;
+        main_vbox.add (book_view);
         book_view.page_selected.connect (page_selected_cb);
         book_view.show_page.connect (show_page_cb);
         book_view.show_menu.connect (show_page_menu_cb);
@@ -1681,28 +1679,6 @@ public class AppWindow : Gtk.ApplicationWindow
             debug ("Restoring window to fullscreen");
             fullscreen ();
         }
-    }
-
-    private bool is_desktop (string name)
-    {
-        var desktop_name_list = Environment.get_variable ("XDG_CURRENT_DESKTOP");
-        if (desktop_name_list == null)
-            return false;
-
-        foreach (var n in desktop_name_list.split (":"))
-            if (n == name)
-                return true;
-
-        return false;
-    }
-
-    private bool is_traditional_desktop ()
-    {
-        const string[] traditional_desktops = { "Unity", "XFCE", "MATE", "LXDE", "Cinnamon", "X-Cinnamon", "i3" };
-        foreach (var name in traditional_desktops)
-            if (is_desktop (name))
-                return true;
-        return false;
     }
 
     private string state_filename
