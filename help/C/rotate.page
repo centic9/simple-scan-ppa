@@ -1,8 +1,18 @@
-<page xmlns="http://projectmallard.org/1.0/"
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its"
       type="guide"
       id="rotate">
 
     <info>
+        <revision pkgversion="3.35.90" date="2020-02-07"/>
+        <credit type="author" its:translate="no">
+            <name>Robert Ancell</name>
+            <email>robert.ancell@gmail.com</email>
+        </credit>
+        <credit type="author" its:translate="no">
+            <name>Ali Shtarbanov</name>
+            <email>ametedinov@gmail.com</email>
+        </credit>
+        <include href="legal.xml" xmlns="http://www.w3.org/2001/XInclude" />
         <link type="guide" xref="index#modify"/>
     </info>
   
@@ -14,20 +24,15 @@
     </p>
     
     <steps>
-      <title>Use Toolbar Buttons</title>
+      <title>Use the Toolbar</title>
       <item><p>Select the page you want to rotate by clicking on it once.</p></item>
       <item><p>Press one of the arrows on the toolbar to rotate the page in the desired direction.</p></item>
     </steps>
     <steps>
       <title>Use Right Click</title>
       <item><p>Right click on the page you want to rotate.</p></item>
-      <item><p>From the context menu choose "Rotate Left" or "Rotate Right".</p></item>
-    </steps>
-    
-    <steps>
-      <title>Use a Menu</title>
-      <item><p>Select the page you want to rotate by clicking on it once.</p></item>
-      <item><p>Click the "Page" menu and select "Rotate Left" or "Rotate Right".</p></item>
+      <item><p>Select <gui style="menuitem">Rotate Left</gui> or
+      <gui style="menuitem">Rotate Right</gui>.</p></item>
     </steps>
     
     <steps>

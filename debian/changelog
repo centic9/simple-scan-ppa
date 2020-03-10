@@ -1,3 +1,41 @@
+simple-scan (3.36.0-0ubuntu1) focal; urgency=medium
+
+  * New upstream release
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Tue, 10 Mar 2020 15:20:44 +1300
+
+simple-scan (3.35.91-0ubuntu1) focal; urgency=medium
+
+  * New upstream release
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Fri, 14 Feb 2020 09:21:53 +1300
+
+simple-scan (3.35.90-0ubuntu1) focal; urgency=medium
+
+  * New upstream release.
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Mon, 10 Feb 2020 16:46:18 +1300
+
+simple-scan (3.34.2-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Switch to debhelper-compat:
+    - debian/control: change to debhelper-compat (=12).
+    - remove debian/compat.
+  * Declare compliance with Debian Policy 4.4.1.2 (No changes needed).
+  * debian/control: Switch to Rules-Requires-Root: No.
+
+ -- Jörg Frings-Fürst <debian@jff.email>  Sat, 28 Dec 2019 15:26:37 +0100
+
+simple-scan (3.34.1-2) unstable; urgency=medium
+
+  * debian/control:
+    - For Python 2 removal change python-gi-cairo to python3-gi-cairo
+      (Closes: #943216).
+  * Declare compliance with Debian Policy 4.4.1.1 (No changes needed).
+
+ -- Jörg Frings-Fürst <debian@jff.email>  Tue, 29 Oct 2019 10:04:46 +0100
+
 simple-scan (3.34.1-1) unstable; urgency=medium
 
   * New upstream release:

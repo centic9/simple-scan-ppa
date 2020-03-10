@@ -1,8 +1,18 @@
-<page xmlns="http://projectmallard.org/1.0/"
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its"
       type="guide"
       id="crop">
 
     <info>
+        <revision pkgversion="3.35.90" date="2020-02-07"/>
+        <credit type="author" its:translate="no">
+            <name>Robert Ancell</name>
+            <email>robert.ancell@gmail.com</email>
+        </credit>
+        <credit type="author" its:translate="no">
+            <name>Ali Shtarbanov</name>
+            <email>ametedinov@gmail.com</email>
+        </credit>
+        <include href="legal.xml" xmlns="http://www.w3.org/2001/XInclude" />
         <link type="guide" xref="index#modify"/>
     </info>
   
@@ -16,27 +26,22 @@
     </p>
     
     <steps>
-      <title>Use a Right Click</title>
-      <item><p>Right click anywhere on the image area and select "Crop".</p></item>
+      <title>Use Right Click</title>
+      <item><p>Right click anywhere on the page.</p></item>
+      <item><p>Select <gui style="menuitem">Crop</gui>.</p></item>
       <item><p>Choose one of the fixed crop frames, or select "Custom" to manually
 	set the crop frame's dimensions by dragging its borders.</p></item>
-      <item><p>Click and hold the frame, then move it to the desired position.</p></item>
+      <item><p>Click and hold the frame to move it to the desired position.</p></item>
+      <item><p>Drag the borders of the frame to set the desired dimensions.</p></item>
     </steps>
-    
-    <steps>
-      <title>Use a Menu</title>
-      <item><p>Navigate to the <guiseq><gui>Page</gui><gui>Crop</gui></guiseq> menu.</p></item>
-      <item><p>Choose one of the fixed crop frames, or select "Custom" to manually adjust the frame's dimensions by dragging its borders.</p></item>
-      <item><p>Click and hold the frame, then move it to the desired position.</p></item>
-    </steps>
-    
+
     <steps>
       <title>Use the Toolbar</title>
-      <item><p>Click the "<gui>Crop</gui>" button in the toolbar.</p>
+      <item><p>Press the <gui style="button">Crop the selected page</gui> button in the toolbar.</p>
 	    <note style="tip"><p>This is the same as choosing "Custom" in step 2 of the
 	      aforementioned methods.</p></note></item>      
-      <item><p>Drag the borders of the frame to set the desired dimensions and position.</p></item>
-
+      <item><p>Click and hold the frame to move it to the desired position.</p></item>
+      <item><p>Drag the borders of the frame to set the desired dimensions.</p></item>
     </steps>
     
     <note><p>

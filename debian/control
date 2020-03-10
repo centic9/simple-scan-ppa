@@ -2,10 +2,10 @@ Source: simple-scan
 Section: gnome
 Priority: optional
 Maintainer: Jörg Frings-Fürst <debian@jff.email>
-Standards-Version: 4.4.1
-Rules-Requires-Root: binary-targets
+Standards-Version: 4.4.1.2
+Rules-Requires-Root: no
 Build-Depends:
- debhelper (>= 12),
+ debhelper-compat (= 12),
  gettext,
  gnome-pkg-tools,
  itstool,
@@ -22,7 +22,7 @@ Build-Depends:
  meson,
  python3-cairo,
  python3-gi,
- python-gi-cairo,
+ python3-gi-cairo,
  python3-scour,
  scour,
  valac,

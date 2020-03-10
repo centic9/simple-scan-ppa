@@ -14,14 +14,6 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkListStore" id="device_model">
-    <columns>
-      <!-- column-name device_name -->
-      <column type="gchararray"/>
-      <!-- column-name label -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
   <object class="GtkListStore" id="paper_size_model">
     <columns>
       <!-- column-name width -->
@@ -75,11 +67,11 @@
                     <property name="row_spacing">15</property>
                     <property name="column_spacing">10</property>
                     <child>
-                      <object class="GtkLabel" id="source_label">
+                      <object class="GtkLabel" id="page_side_label">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes" comments="Label beside scan source combo box">_Scanner</property>
+                        <property name="label" translatable="yes" comments="Label beside scan side combo box">Scan _Sides</property>
                         <property name="use_underline">True</property>
-                        <property name="mnemonic_widget">device_combo</property>
+                        <property name="mnemonic_widget">front_side_button</property>
                         <property name="xalign">1</property>
                         <style>
                           <class name="dim-label"/>
@@ -91,23 +83,11 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkComboBox" id="device_combo">
+                      <object class="GtkLabel" id="paper_size_label">
                         <property name="visible">True</property>
-                        <property name="hexpand">True</property>
-                        <property name="model">device_model</property>
-                        <signal name="changed" handler="device_combo_changed_cb" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="page_side_label">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes" comments="Label beside scan side combo box">Scan Sides</property>
+                        <property name="label" translatable="yes" comments="Label beside page size combo box">_Page Size</property>
                         <property name="use_underline">True</property>
-                        <property name="mnemonic_widget">scan_side_box</property>
+                        <property name="mnemonic_widget">paper_size_combo</property>
                         <property name="xalign">1</property>
                         <style>
                           <class name="dim-label"/>
@@ -119,21 +99,6 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="paper_size_label">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes" comments="Label beside page size combo box">Page Size</property>
-                        <property name="use_underline">True</property>
-                        <property name="xalign">1</property>
-                        <style>
-                          <class name="dim-label"/>
-                        </style>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">2</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkComboBox" id="paper_size_combo">
                         <property name="visible">True</property>
                         <property name="hexpand">True</property>
@@ -141,7 +106,7 @@
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
-                        <property name="top_attach">2</property>
+                        <property name="top_attach">1</property>
                       </packing>
                     </child>
                     <child>
@@ -184,7 +149,7 @@
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
-                        <property name="top_attach">1</property>
+                        <property name="top_attach">0</property>
                       </packing>
                     </child>
                   </object>
@@ -197,8 +162,9 @@
                     <child>
                       <object class="GtkLabel" id="page_delay_label">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes" comments="Label beside page delay scale">Delay</property>
+                        <property name="label" translatable="yes" comments="Label beside page delay scale">_Delay</property>
                         <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">page_delay_3s_button</property>
                         <property name="xalign">1</property>
                         <style>
                           <class name="dim-label"/>
@@ -316,7 +282,8 @@
             <child type="tab">
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes" comments="Preferences Dialog: Tab label for scanning settings">Scanning</property>
+                <property name="label" translatable="yes" comments="Preferences Dialog: Tab label for scanning settings">_Scanning</property>
+                <property name="use_underline">True</property>
               </object>
               <packing>
                 <property name="tab_fill">False</property>
@@ -336,8 +303,9 @@
                     <child>
                       <object class="GtkLabel" id="text_dpi_label">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes" comments="Label beside scan source combo box">_Text Resolution</property>
+                        <property name="label" translatable="yes" comments="Label beside scan resolution combo box">_Text Resolution</property>
                         <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">text_dpi_combo</property>
                         <property name="xalign">1</property>
                         <style>
                           <class name="dim-label"/>
@@ -351,8 +319,9 @@
                     <child>
                       <object class="GtkLabel" id="photo_dpi_label">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes" comments="Label beside scan source combo box">_Photo Resolution</property>
+                        <property name="label" translatable="yes" comments="Label beside scan resolution combo box">_Image Resolution</property>
                         <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">photo_dpi_combo</property>
                         <property name="xalign">1</property>
                         <style>
                           <class name="dim-label"/>
@@ -395,8 +364,9 @@
                     <child>
                       <object class="GtkLabel" id="brightness_label">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes" comments="Label beside brightness scale">Brightness</property>
+                        <property name="label" translatable="yes" comments="Label beside brightness scale">_Brightness</property>
                         <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">brightness_scale</property>
                         <property name="xalign">1</property>
                         <style>
                           <class name="dim-label"/>
@@ -410,8 +380,9 @@
                     <child>
                       <object class="GtkLabel" id="contrast_label">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes" comments="Label beside contrast scale">Contrast</property>
+                        <property name="label" translatable="yes" comments="Label beside contrast scale">_Contrast</property>
                         <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">contrast_scale</property>
                         <property name="xalign">1</property>
                         <style>
                           <class name="dim-label"/>
@@ -458,7 +429,8 @@
             <child type="tab">
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes" comments="Preferences Dialog: Tab for quality settings">Quality</property>
+                <property name="label" translatable="yes" comments="Preferences Dialog: Tab for quality settings">_Quality</property>
+                <property name="use_underline">True</property>
               </object>
               <packing>
                 <property name="tab_fill">False</property>
@@ -471,7 +443,6 @@
   </template>
   <object class="GtkSizeGroup" id="label_size_group">
     <widgets>
-      <widget name="source_label"/>
       <widget name="page_side_label"/>
       <widget name="paper_size_label"/>
       <widget name="page_delay_label"/>
