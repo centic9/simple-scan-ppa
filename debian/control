@@ -2,10 +2,10 @@ Source: simple-scan
 Section: gnome
 Priority: optional
 Maintainer: Jörg Frings-Fürst <debian@jff.email>
-Standards-Version: 4.4.1.2
+Standards-Version: 4.5.0
 Rules-Requires-Root: no
 Build-Depends:
- debhelper-compat (= 12),
+ debhelper-compat (= 13),
  gettext,
  gnome-pkg-tools,
  itstool,
