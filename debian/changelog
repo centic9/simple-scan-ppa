@@ -1,3 +1,9 @@
+simple-scan (3.36.2.1-1build1) groovy; urgency=medium
+
+  * Rebuild against new libsane 1.0.30.
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Mon, 22 Jun 2020 12:12:47 +0200
+
 simple-scan (3.36.2.1-1) unstable; urgency=medium
 
   * New upstream release.
