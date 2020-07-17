@@ -19,16 +19,16 @@
 	</p>
       </item>
       <item>
-	<p>Press the "Save" button.</p>
+	<p>Pulsar el botón «Guardar».</p>
       </item>
     </steps>
     
     
 <table frame="bottom left right top" rules="rows cols" shade="rows">
-	<title>Supported File Types</title>
+	<title>Tipos de archivos soportados</title>
 	<tr>
-		<td><p><em>Type</em></p></td>
-		<td><p><em>Brief Description</em></p></td>
+		<td><p><em>Tipo</em></p></td>
+		<td><p><em>Breve descripción</em></p></td>
 	</tr>
 	<tr>
 		<td><p>PDF</p></td>

@@ -180,7 +180,13 @@ install-help: $(_HELP_LC_FILES)
 	    elif test "x$$lc" != "xC"; then \
 	      if test "x$(YELP_LC_MEDIA_LINKS)" != "x"; then \
 	        echo "$(LN_S) -f $(HELP_DIR)/C/$(HELP_ID)/$$f $$helpdir$$f"; \
-	        $(LN_S) -f "$(HELP_DIR)/C/$(HELP_ID)/$$f" "$$helpdir$$f" || exit 1; \
+	        dname="$$f"; \
+	        pars="../"; \
+	        while test "$$dname" != "." -a "$$dname" != "/"; do \
+	          pars="../$$pars"; \
+	          dname=$$(dirname "$$dname"); \
+	        done; \
+	        $(LN_S) -f $$pars"C/$(HELP_ID)/$$f" "$$helpdir$$f" || exit 1; \
 	      fi; \
 	    fi; \
 	  done; \

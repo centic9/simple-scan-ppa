@@ -5,7 +5,7 @@
         <link type="guide" xref="index#acquire"/>
     </info>
   
-	<title>Setting the Scan Resolution</title>
+	<title>Scan-Auflösung einstellen</title>
 
     <p>
     The default resolution for document type <gui><em>Text</em></gui> is 150 dpi (dots per inch)

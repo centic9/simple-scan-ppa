@@ -5,7 +5,7 @@
         <link type="guide" xref="index#use"/>
     </info>
   
-	<title>Printing</title>
+	<title>Stampare</title>
 
     <p>
     <app>Simple Scan</app> allows you print a scanned document directly from the its
@@ -13,7 +13,7 @@
     Scan</app> a very convenient tool for making copies of documents or photos. 
     </p>
     <steps>
-      <title>To Print a Document</title>
+      <title>Per stampare un documento</title>
       <item>
 	<p>Go to the <guiseq><gui>Document</gui><gui>Print</gui>
 	</guiseq> menu or use the keyboard shortcut <keyseq><key>Ctrl</key><key>P</key></keyseq>.

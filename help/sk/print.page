@@ -7,13 +7,9 @@
   
 	<title>Tlač</title>
 
-    <p>
-    <app>Simple Scan</app> allows you print a scanned document directly from the its
-    interface, without having to save the document first. This feature makes <app>Simple
-    Scan</app> a very convenient tool for making copies of documents or photos. 
-    </p>
+    <p>Aplikácia <app>Jednoduché skenovanie</app> umožňuje tlač skenovaného dokumentu priamo prostredníctvom svojho rozhrania, bez nutnosti uloženia dokumentu. Táto funkcia vytvára z aplikácie <app>Jednoduché skenovanie</app> veľmi pohodlný nástroj na tvorbu kópií dokumentov a fotografií.</p>
     <steps>
-      <title>To Print a Document</title>
+      <title>Na vytlačenie dokumentu</title>
       <item>
 	<p>Go to the <guiseq><gui>Document</gui><gui>Print</gui>
 	</guiseq> menu or use the keyboard shortcut <keyseq><key>Ctrl</key><key>P</key></keyseq>.

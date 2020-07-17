@@ -15,30 +15,28 @@
     </p>
     
     <steps>
-      <title>Use a Right Click</title>
-      <item><p>Right click anywhere on the image area and select "Crop".</p></item>
+      <title>Použitím pravého tlačidla</title>
+      <item><p>Kliknite pravým tlačidlom kdekoľvek v oblasti obrázku a vyberte „Orezanie“.</p></item>
       <item><p>Choose one of the fixed crop frames, or select "Custom" to manually
 	set the crop frame's dimensions by dragging its borders.</p></item>
-      <item><p>Click and hold the frame, then move it to the desired position.</p></item>
+      <item><p>Kliknite a podržte rámec, potom ho premiestnite do požadovanej pozície.</p></item>
     </steps>
     
     <steps>
       <title>Use a Menu</title>
-      <item><p>Navigate to the <guiseq><gui>Page</gui><gui>Crop</gui></guiseq> menu.</p></item>
+      <item><p>Prejdite do ponuky <guiseq><gui>Stránka</gui><gui>Orezanie</gui></guiseq>.</p></item>
       <item><p>Choose one of the fixed crop frames, or select "Custom" to manually adjust the frame's dimensions by dragging its borders.</p></item>
-      <item><p>Click and hold the frame, then move it to the desired position.</p></item>
+      <item><p>Kliknite a podržte rámec, potom ho premiestnite do požadovanej pozície.</p></item>
     </steps>
     
     <steps>
-      <title>Use the Toolbar</title>
-      <item><p>Click the "<gui>Crop</gui>" button in the toolbar.</p>
+      <title>Použitím panela nástrojov</title>
+      <item><p>Kliknite na tlačidlo „<gui>Orezanie</gui>“ v paneli nástrojov.</p>
 	    <note style="tip"><p>This is the same as choosing "Custom" in step 2 of the
 	      aforementioned methods.</p></note></item>      
-      <item><p>Drag the borders of the frame to set the desired dimensions and position.</p></item>
+      <item><p>Pretiahnutím okrajov rámca nastavíte požadované rozmery a pozíciu.</p></item>
 
     </steps>
     
-    <note><p>
-    Each new scanned page will use the previous crop.
-    </p></note>
+    <note><p>Na každú novú skenovanú stránku sa použije predchádzajúce orezanie.</p></note>
 </page>

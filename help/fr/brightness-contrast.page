@@ -5,10 +5,7 @@
         <link type="guide" xref="index#acquire"/>
     </info>
 
-	<title>Setting brightness and Contrast</title>
+	<title>Réglage de la luminosité et du contraste</title>
 
-    <p>
-    Some scanners allow the user to adjust the brightness and contrast when scanning.
-    If your scans come out too dark or too light you can adjust these settings from the <guiseq><gui>Document</gui><gui>Preferences</gui></guiseq> menu.
-    </p>
+    <p>Certains périphériques de numérisation permettent à l'utilisateur d'ajuster la luminosité et le contraste durant la numérisation. Si vos numérisations sont trop sombres ou trop claires, vous pouvez régler ces paramètres à partir du menu <guiseq><gui>Document</gui><gui>Préférences</gui></guiseq>.</p>
 </page>

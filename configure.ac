@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(simple-scan, 3.20.0)
+AC_INIT(simple-scan, 3.23.2)
 AM_INIT_AUTOMAKE([1.11 no-dist-gzip dist-xz foreign])
 AM_SILENT_RULES([yes])
 AM_MAINTAINER_MODE
@@ -11,6 +11,8 @@ AM_PROG_CC_C_O
 
 GLIB_GSETTINGS
 AC_PATH_PROG(GLIB_COMPILE_RESOURCES, glib-compile-resources)
+
+APPSTREAM_XML
 
 dnl ###########################################################################
 dnl Dependencies
@@ -80,8 +82,9 @@ dnl ###########################################################################
 dnl Internationalization
 dnl ###########################################################################
 
-IT_PROG_INTLTOOL([0.35.0])
-AC_SUBST(GETTEXT_PACKAGE, simple-scan)
+AM_GNU_GETTEXT([external])
+AM_GNU_GETTEXT_VERSION([0.19.7])
+AC_SUBST([GETTEXT_PACKAGE], [simple-scan])
 
 dnl ###########################################################################
 dnl Files to generate
@@ -90,7 +93,6 @@ dnl ###########################################################################
 AC_OUTPUT([
 Makefile
 data/Makefile
-data/appdata/Makefile
 data/icons/Makefile
 help/Makefile
 po/Makefile.in

@@ -5,7 +5,7 @@
         <link type="guide" xref="index#use"/>
     </info>
   
-	<title>Sending via Email</title>
+	<title>Inviare via email</title>
 
     <p>
     To email the current document use the <guiseq><gui>Document</gui><gui>Email</gui></guiseq>

@@ -19,15 +19,15 @@
 	</p>
       </item>
       <item>
-	<p>Press the "Save" button.</p>
+	<p>Stlačte tlačidlo „Uložiť“.</p>
       </item>
     </steps>
     
     
 <table frame="bottom left right top" rules="rows cols" shade="rows">
-	<title>Supported File Types</title>
+	<title>Podporované typy súborov</title>
 	<tr>
-		<td><p><em>Type</em></p></td>
+		<td><p><em>Typ</em></p></td>
 		<td><p><em>Brief Description</em></p></td>
 	</tr>
 	<tr>

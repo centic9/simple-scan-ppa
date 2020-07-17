@@ -7,14 +7,8 @@
   
 	<title>Réorganisation des pages</title>
 
-    <p>
-    To move a page, right click on it and choose <gui><em>Move Left</em></gui> or 
-    <gui><em>Move Right</em></gui>.
-    </p> 
+    <p>Pour déplacer une page, faites un clic droit dessus et sélectionnez <gui><em>Déplacer vers la gauche</em></gui> ou <gui><em>Déplacer vers la droite</em></gui>.</p> 
     
-    <p>
-    Alternatively, you can move a page by first selecting it and then choosing 
-    <gui><em>Move Left</em></gui> or <gui><em>Move Right</em></gui> from the "Page" menu.
-    </p> 
+    <p>Alternativement, vous pouvez déplacer une page en la sélectionnant en premier, puis en choisissant <gui><em>Déplacer vers la gauche</em></gui> ou <gui><em>Déplacer vers la droite</em></gui> depuis le menu « Page ».</p> 
 
 </page>

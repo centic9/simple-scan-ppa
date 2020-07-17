@@ -7,11 +7,7 @@
   
 	<title>Per E-Mail versenden</title>
 
-    <p>
-    To email the current document use the <guiseq><gui>Document</gui><gui>Email</gui></guiseq>
-    menu (<keyseq><key>Ctrl</key><key>E</key></keyseq>). Your email program will be opened with
-    a new message containing the scanned document as an attachment.
-    </p>
+    <p>Um das Dokument per E-Mail zu versenden, bitte im Menü <guiseq><gui>Dokument</gui><gui>E-Mail</gui></guiseq> öffnen (<keyseq><key>Strg</key><key>E</key></keyseq>). Dadurch wird Ihr E-Mail-Programm mit einer neuen Nachricht geöffnet, die das eingelesene Dokument als Anhang enthält.</p>
     <p>
     If the document type was set to "Text" the email will have a PDF attachment for each page. 
     Conversely, if the document type was set to "Photo", the email will have a JPEG
