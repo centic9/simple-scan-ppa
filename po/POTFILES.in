@@ -1,12 +1,15 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
-data/simple-scan.ui
-data/simple-scan.desktop.in
+data/org.gnome.SimpleScan.gschema.xml
 data/simple-scan.appdata.xml.in
+data/simple-scan.desktop.in
+src/app-window.ui
+src/app-window.vala
+src/authorize-dialog.ui
 src/book.vala
-src/book-view.vala
+src/help-overlay.ui
 src/page.vala
-src/page-view.vala
+src/preferences-dialog.ui
+src/preferences-dialog.vala
 src/scanner.vala
 src/simple-scan.vala
-src/ui.vala

@@ -69,7 +69,8 @@ public enum ScanType
     SINGLE,
     ADF_FRONT,
     ADF_BACK,
-    ADF_BOTH
+    ADF_BOTH,
+    BATCH
 }
 
 public class ScanOptions
@@ -82,6 +83,7 @@ public class ScanOptions
     public int paper_height;
     public int brightness;
     public int contrast;
+    public int page_delay;
 }
 
 private class ScanJob
@@ -96,6 +98,7 @@ private class ScanJob
     public int page_height;
     public int brightness;
     public int contrast;
+    public int page_delay;
 }
 
 private class Request {}
@@ -945,6 +948,7 @@ public class Scanner
                 switch (job.type)
                 {
                 case ScanType.SINGLE:
+                case ScanType.BATCH:
                     if (!set_default_option (handle, option, index))
                         if (!set_constrained_string_option (handle, option, index, flatbed_sources, null))
                             warning ("Unable to set single page source, please file a bug");
@@ -1040,7 +1044,7 @@ public class Scanner
             if (option != null)
             {
                 if (option.type == Sane.ValueType.BOOL)
-                    set_bool_option (handle, option, index, job.type != ScanType.SINGLE, null);
+                    set_bool_option (handle, option, index, (job.type != ScanType.SINGLE) && (job.type != ScanType.BATCH), null);
             }
 
             /* Disable compression, we will compress after scanning */
@@ -1151,7 +1155,7 @@ public class Scanner
         if ((option.cap & Sane.Capability.INACTIVE) != 0)
             return;
 
-        /* Some options are unnammed (e.g. Option 0) */
+        /* Some options are unnamed (e.g. Option 0) */
         if (option.name == null)
             return;
 
@@ -1291,6 +1295,9 @@ public class Scanner
         /* Go back for another page */
         if (job.type != ScanType.SINGLE)
         {
+            if (job.type == ScanType.BATCH)
+                Thread.usleep (job.page_delay * 1000);
+
             page_number++;
             pass_number = 0;
             notify (new NotifyPageDone (job.id));
@@ -1550,6 +1557,8 @@ public class Scanner
             return "ScanType.ADF_BACK";
         case ScanType.ADF_BOTH:
             return "ScanType.ADF_BOTH";
+        case ScanType.BATCH:
+            return "ScanType.BATCH";
         default:
             return "%d".printf (type);
         }
@@ -1557,10 +1566,10 @@ public class Scanner
 
     public void scan (string? device, ScanOptions options)
     {
-        debug ("Scanner.scan (\"%s\", dpi=%d, scan_mode=%s, depth=%d, type=%s, paper_width=%d, paper_height=%d, brightness=%d, contrast=%d)",
+        debug ("Scanner.scan (\"%s\", dpi=%d, scan_mode=%s, depth=%d, type=%s, paper_width=%d, paper_height=%d, brightness=%d, contrast=%d, delay=%dms)",
                device != null ? device : "(null)", options.dpi, get_scan_mode_string (options.scan_mode), options.depth,
                get_scan_type_string (options.type), options.paper_width, options.paper_height,
-               options.brightness, options.contrast);
+               options.brightness, options.contrast, options.page_delay);
         var request = new RequestStartScan ();
         request.job = new ScanJob ();
         request.job.id = job_id++;
@@ -1573,6 +1582,7 @@ public class Scanner
         request.job.page_height = options.paper_height;
         request.job.brightness = options.brightness;
         request.job.contrast = options.contrast;
+        request.job.page_delay = options.page_delay;
         request_queue.push (request);
     }
 
