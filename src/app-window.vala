@@ -23,6 +23,12 @@ public class AppWindow : Gtk.ApplicationWindow
         { "scan_adf", scan_adf_cb },
         { "scan_batch", scan_batch_cb },
         { "scan_stop", scan_stop_cb },
+        { "rotate_left", rotate_left_cb },
+        { "rotate_right", rotate_right_cb },
+        { "move_left", move_left_cb },
+        { "move_right", move_right_cb },
+        { "copy_page", copy_page_cb },
+        { "delete_page", delete_page_cb },
         { "reorder", reorder_document_cb },
         { "save", save_document_activate_cb },
         { "email", email_document_cb },
@@ -38,6 +44,9 @@ public class AppWindow : Gtk.ApplicationWindow
 
     private PreferencesDialog preferences_dialog;
 
+    private bool setting_devices;
+    private bool user_selected_device;
+
     [GtkChild]
     private Gtk.HeaderBar header_bar;
     [GtkChild]
@@ -46,6 +55,10 @@ public class AppWindow : Gtk.ApplicationWindow
     private Gtk.Stack stack;
     [GtkChild]
     private Gtk.Label status_primary_label;
+    [GtkChild]
+    private Gtk.ListStore device_model;
+    [GtkChild]
+    private Gtk.ComboBox device_combo;
     [GtkChild]
     private Gtk.Label status_secondary_label;
     [GtkChild]
@@ -91,6 +104,8 @@ public class AppWindow : Gtk.ApplicationWindow
 
     [GtkChild]
     private Gtk.Image scan_options_image;
+    [GtkChild]
+    private Gtk.Image scan_hint_image;
     [GtkChild]
     private Gtk.RadioButton scan_single_radio;
     [GtkChild]
@@ -171,18 +186,17 @@ public class AppWindow : Gtk.ApplicationWindow
         set { preferences_dialog.set_page_delay (value); }
     }
 
-    public string? selected_device
-    {
-        owned get { return preferences_dialog.get_selected_device (); }
-        set { preferences_dialog.set_selected_device (value); }
-    }
-
     public signal void start_scan (string? device, ScanOptions options);
     public signal void stop_scan ();
 
     public AppWindow ()
     {
         settings = new Settings ("org.gnome.SimpleScan");
+
+        var renderer = new Gtk.CellRendererText ();
+        renderer.set_property ("xalign", 0.5);
+        device_combo.pack_start (renderer, true);
+        device_combo.add_attribute (renderer, "text", 1);
 
         book = new Book ();
         book.page_added.connect (page_added_cb);
@@ -193,19 +207,6 @@ public class AppWindow : Gtk.ApplicationWindow
         load ();
 
         clear_document ();
-        autosave_manager = new AutosaveManager ();
-        autosave_manager.book = book;
-        autosave_manager.load ();
-
-        if (book.n_pages == 0)
-            book_needs_saving = false;
-        else
-        {
-            stack.set_visible_child_name ("document");
-            book_view.selected_page = book.get_page (0);
-            book_needs_saving = true;
-            book_changed_cb (book);
-        }
     }
 
     ~AppWindow ()
@@ -249,13 +250,15 @@ public class AppWindow : Gtk.ApplicationWindow
             status_primary_label.set_text (/* Label shown when searching for scanners */
                                            _("Searching for Scanners…"));
             status_secondary_label.visible = false;
+            device_combo.visible = false;
         }
-        else if (selected_device != null)
+        else if (get_selected_device () != null)
         {
             status_primary_label.set_text (/* Label shown when detected a scanner */
                                            _("Ready to Scan"));
-            status_secondary_label.set_text (preferences_dialog.get_selected_device_label ());
-            status_secondary_label.visible = true;
+            status_secondary_label.set_text (get_selected_device_label ());
+            status_secondary_label.visible = false;
+            device_combo.visible = true;
         }
         else if (this.missing_driver != null)
         {
@@ -264,6 +267,7 @@ public class AppWindow : Gtk.ApplicationWindow
             /* Instructions to install driver software */
             status_secondary_label.set_markup (_("You need to <a href=\"install-firmware\">install driver software</a> for your scanner."));
             status_secondary_label.visible = true;
+            device_combo.visible = false;
         }
         else
         {
@@ -272,6 +276,7 @@ public class AppWindow : Gtk.ApplicationWindow
             /* Hint to user on why there are no scanners detected */
             status_secondary_label.set_text (_("Please check your scanner is connected and powered on"));
             status_secondary_label.visible = true;
+            device_combo.visible = false;
         }
     }
 
@@ -279,8 +284,160 @@ public class AppWindow : Gtk.ApplicationWindow
     {
         have_devices = true;
         this.missing_driver = missing_driver;
-        preferences_dialog.set_scan_devices (devices);
+
+        setting_devices = true;
+
+        /* If the user hasn't chosen a scanner choose the best available one */
+        var have_selection = false;
+        if (user_selected_device)
+            have_selection = device_combo.active >= 0;
+
+        /* Add new devices */
+        int index = 0;
+        Gtk.TreeIter iter;
+        foreach (var device in devices)
+        {
+            int n_delete = -1;
+
+            /* Find if already exists */
+            if (device_model.iter_nth_child (out iter, null, index))
+            {
+                int i = 0;
+                do
+                {
+                    string name;
+                    bool matched;
+
+                    device_model.get (iter, 0, out name, -1);
+                    matched = name == device.name;
+
+                    if (matched)
+                    {
+                        n_delete = i;
+                        break;
+                    }
+                    i++;
+                } while (device_model.iter_next (ref iter));
+            }
+
+            /* If exists, remove elements up to this one */
+            if (n_delete >= 0)
+            {
+                int i;
+
+                /* Update label */
+                device_model.set (iter, 1, device.label, -1);
+
+                for (i = 0; i < n_delete; i++)
+                {
+                    device_model.iter_nth_child (out iter, null, index);
+#if VALA_0_36
+                    device_model.remove (ref iter);
+#else
+                    device_model.remove (iter);
+#endif
+                }
+            }
+            else
+            {
+                device_model.insert (out iter, index);
+                device_model.set (iter, 0, device.name, 1, device.label, -1);
+            }
+            index++;
+        }
+
+        /* Remove any remaining devices */
+        while (device_model.iter_nth_child (out iter, null, index))
+#if VALA_0_36
+            device_model.remove (ref iter);
+#else
+            device_model.remove (iter);
+#endif
+
+        /* Select the previously selected device or the first available device */
+        if (!have_selection)
+        {
+            var device = settings.get_string ("selected-device");
+            if (device != null && find_scan_device (device, out iter))
+                device_combo.set_active_iter (iter);
+            else
+                device_combo.set_active (0);
+        }
+
+        setting_devices = false;
+
         update_scan_status ();
+    }
+
+    private bool prompt_to_load_autosaved_book ()
+    {
+        var dialog = new Gtk.MessageDialog (this,
+                                            Gtk.DialogFlags.MODAL,
+                                            Gtk.MessageType.QUESTION,
+                                            Gtk.ButtonsType.YES_NO,
+                                            /* Contents of dialog that shows if autosaved book should be loaded. */
+                                            _("An autosaved book exists. Do you want to open it?"));
+        dialog.set_default_response(Gtk.ResponseType.YES);
+        var response = dialog.run ();
+        dialog.destroy ();
+        return response == Gtk.ResponseType.YES;
+    }
+
+    private string? get_selected_device ()
+    {
+        Gtk.TreeIter iter;
+
+        if (device_combo.get_active_iter (out iter))
+        {
+            string device;
+            device_model.get (iter, 0, out device, -1);
+            return device;
+        }
+
+        return null;
+    }
+
+    private string? get_selected_device_label ()
+    {
+        Gtk.TreeIter iter;
+
+        if (device_combo.get_active_iter (out iter))
+        {
+            string label;
+            device_model.get (iter, 1, out label, -1);
+            return label;
+        }
+
+        return null;
+    }
+
+    public void set_selected_device (string device)
+    {
+        user_selected_device = true;
+
+        Gtk.TreeIter iter;
+        if (!find_scan_device (device, out iter))
+            return;
+
+        device_combo.set_active_iter (iter);
+    }
+
+    private bool find_scan_device (string device, out Gtk.TreeIter iter)
+    {
+        bool have_iter = false;
+
+        if (device_model.get_iter_first (out iter))
+        {
+            do
+            {
+                string d;
+                device_model.get (iter, 0, out d, -1);
+                if (d == device)
+                    have_iter = true;
+            } while (!have_iter && device_model.iter_next (ref iter));
+        }
+
+        return have_iter;
     }
 
     private string? choose_file_location ()
@@ -537,7 +694,7 @@ public class AppWindow : Gtk.ApplicationWindow
 
     private async bool prompt_to_save_async (string title, string discard_label)
     {
-        if (!book_needs_saving)
+        if (!book_needs_saving || (book.n_pages == 0))
             return true;
 
         var dialog = new Gtk.MessageDialog (this,
@@ -618,7 +775,7 @@ public class AppWindow : Gtk.ApplicationWindow
     {
         status_primary_label.set_text (/* Label shown when scan started */
                                        _("Contacting scanner…"));
-        start_scan (selected_device, options);
+        start_scan (get_selected_device (), options);
     }
 
     private void scan_single_cb ()
@@ -646,6 +803,36 @@ public class AppWindow : Gtk.ApplicationWindow
     private void scan_stop_cb ()
     {
         stop_scan ();
+    }
+
+    private void rotate_left_cb ()
+    {
+        rotate_left_button_clicked_cb ();
+    }
+
+    private void rotate_right_cb ()
+    {
+        rotate_right_button_clicked_cb ();
+    }
+
+    private void move_left_cb ()
+    {
+        page_move_left_menuitem_activate_cb ();
+    }
+
+    private void move_right_cb ()
+    {
+        page_move_right_menuitem_activate_cb ();
+    }
+
+    private void copy_page_cb ()
+    {
+        copy_to_clipboard_button_clicked_cb ();
+    }
+
+    private void delete_page_cb ()
+    {
+        page_delete_menuitem_activate_cb ();
     }
 
     private void set_scan_type (ScanType scan_type)
@@ -697,10 +884,12 @@ public class AppWindow : Gtk.ApplicationWindow
         if (document_hint == "text")
         {
             text_radio.active = true;
+            scan_hint_image.icon_name = "x-office-document-symbolic";
         }
         else if (document_hint == "photo")
         {
             photo_radio.active = true;
+            scan_hint_image.icon_name = "image-x-generic-symbolic";
         }
 
         if (save)
@@ -719,6 +908,12 @@ public class AppWindow : Gtk.ApplicationWindow
     {
         if (button.active)
             set_document_hint ("photo", true);
+    }
+
+    [GtkCallback]
+    private void preferences_button_clicked_cb (Gtk.Button button)
+    {
+        preferences_dialog.present ();
     }
 
     private ScanOptions make_scan_options ()
@@ -745,8 +940,20 @@ public class AppWindow : Gtk.ApplicationWindow
     }
 
     [GtkCallback]
+    private void device_combo_changed_cb (Gtk.Widget widget)
+    {
+        if (setting_devices)
+            return;
+        user_selected_device = true;
+        if (get_selected_device () != null)
+            settings.set_string ("selected-device", get_selected_device ());
+    }
+
+    [GtkCallback]
     private void scan_button_clicked_cb (Gtk.Widget widget)
     {
+        scan_button.visible = false;
+        stop_button.visible = true;
         var options = make_scan_options ();
         options.type = scan_type;
         if (options.type == ScanType.ADF_BOTH)
@@ -757,6 +964,8 @@ public class AppWindow : Gtk.ApplicationWindow
     [GtkCallback]
     private void stop_scan_button_clicked_cb (Gtk.Widget widget)
     {
+        scan_button.visible = true;
+        stop_button.visible = false;
         stop_scan ();
     }
 
@@ -856,7 +1065,7 @@ public class AppWindow : Gtk.ApplicationWindow
     }
 
     [GtkCallback]
-    private void rotate_left_button_clicked_cb (Gtk.Widget widget)
+    private void rotate_left_button_clicked_cb ()
     {
         if (updating_page_menu)
             return;
@@ -866,7 +1075,7 @@ public class AppWindow : Gtk.ApplicationWindow
     }
 
     [GtkCallback]
-    private void rotate_right_button_clicked_cb (Gtk.Widget widget)
+    private void rotate_right_button_clicked_cb ()
     {
         if (updating_page_menu)
             return;
@@ -968,7 +1177,7 @@ public class AppWindow : Gtk.ApplicationWindow
     }
 
     [GtkCallback]
-    private void crop_rotate_menuitem_activate_cb (Gtk.Widget widget)
+    private void crop_rotate_menuitem_activate_cb ()
     {
         var page = book_view.selected_page;
         if (page == null)
@@ -977,7 +1186,7 @@ public class AppWindow : Gtk.ApplicationWindow
     }
 
     [GtkCallback]
-    private void page_move_left_menuitem_activate_cb (Gtk.Widget widget)
+    private void page_move_left_menuitem_activate_cb ()
     {
         var page = book_view.selected_page;
         var index = book.get_page_index (page);
@@ -986,7 +1195,7 @@ public class AppWindow : Gtk.ApplicationWindow
     }
 
     [GtkCallback]
-    private void page_move_right_menuitem_activate_cb (Gtk.Widget widget)
+    private void page_move_right_menuitem_activate_cb ()
     {
         var page = book_view.selected_page;
         var index = book.get_page_index (page);
@@ -995,7 +1204,7 @@ public class AppWindow : Gtk.ApplicationWindow
     }
 
     [GtkCallback]
-    private void page_delete_menuitem_activate_cb (Gtk.Widget widget)
+    private void page_delete_menuitem_activate_cb ()
     {
         book_view.book.delete_page (book_view.selected_page);
     }
@@ -1179,7 +1388,7 @@ public class AppWindow : Gtk.ApplicationWindow
     }
 
     [GtkCallback]
-    private void copy_to_clipboard_button_clicked_cb (Gtk.Widget widget)
+    private void copy_to_clipboard_button_clicked_cb ()
     {
         var page = book_view.selected_page;
         if (page != null)
@@ -1562,20 +1771,28 @@ public class AppWindow : Gtk.ApplicationWindow
         app.set_accels_for_action ("app.scan_adf", { "<Ctrl>F" });
         app.set_accels_for_action ("app.scan_batch", { "<Ctrl>M" });
         app.set_accels_for_action ("app.scan_stop", { "Escape" });
+        app.set_accels_for_action ("app.rotate_left", { "bracketleft" });
+        app.set_accels_for_action ("app.rotate_right", { "bracketright" });
+        app.set_accels_for_action ("app.move_left", { "less" });
+        app.set_accels_for_action ("app.move_right", { "greater" });
+        app.set_accels_for_action ("app.copy_page", { "<Ctrl>C" });
+        app.set_accels_for_action ("app.delete_page", { "Delete" });
         app.set_accels_for_action ("app.save", { "<Ctrl>S" });
         app.set_accels_for_action ("app.email", { "<Ctrl>E" });
         app.set_accels_for_action ("app.print", { "<Ctrl>P" });
         app.set_accels_for_action ("app.help", { "F1" });
         app.set_accels_for_action ("app.quit", { "<Ctrl>Q" });
+        app.set_accels_for_action ("win.show-help-overlay", { "<Ctrl>F1" });
 
         var gear_menu = new Menu ();
         var section = new Menu ();
         gear_menu.append_section (null, section);
         section.append (_("Email"), "app.email");
+        section.append (_("Print"), "app.print");
         section.append (C_("menu", "Reorder Pages"), "app.reorder");
+        section.append (_("Preferences"), "app.preferences");
         section = new Menu ();
         gear_menu.append_section (null, section);
-        section.append (_("Preferences"), "app.preferences");
         section.append (_("Keyboard Shortcuts"), "win.show-help-overlay");
         section.append (_("Help"), "app.help");
         section.append (_("About Document Scanner"), "app.about");
@@ -1708,6 +1925,20 @@ public class AppWindow : Gtk.ApplicationWindow
             window_height = 400;
         window_is_maximized = state_get_boolean (f, "window", "is-maximized");
         window_is_fullscreen = state_get_boolean (f, "window", "is-fullscreen");
+        scan_type = Scanner.type_from_string(state_get_string (f, "scanner", "scan-type", "single"));
+        set_scan_type (scan_type);
+    }
+
+    private string state_get_string (KeyFile f, string group_name, string key, string default)
+    {
+        try
+        {
+            return f.get_string (group_name, key);
+        }
+        catch
+        {
+            return default;
+        }
     }
 
     private int state_get_integer (KeyFile f, string group_name, string key, int default = 0)
@@ -1756,6 +1987,7 @@ public class AppWindow : Gtk.ApplicationWindow
         f.set_integer ("window", "height", window_height);
         f.set_boolean ("window", "is-maximized", window_is_maximized);
         f.set_boolean ("window", "is-fullscreen", window_is_fullscreen);
+        f.set_string ("scanner", "scan-type", Scanner.type_to_string(scan_type));
         try
         {
             FileUtils.set_contents (state_filename, f.to_data ());
@@ -1769,6 +2001,21 @@ public class AppWindow : Gtk.ApplicationWindow
     public void start ()
     {
         visible = true;
+        autosave_manager = new AutosaveManager ();
+        autosave_manager.book = book;
+
+        if (autosave_manager.exists () && prompt_to_load_autosaved_book ())
+            autosave_manager.load ();
+
+        if (book.n_pages == 0)
+            book_needs_saving = false;
+        else
+        {
+            stack.set_visible_child_name ("document");
+            book_view.selected_page = book.get_page (0);
+            book_needs_saving = true;
+            book_changed_cb (book);
+        }
     }
 }
 

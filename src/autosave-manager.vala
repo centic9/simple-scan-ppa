@@ -59,6 +59,12 @@ public class AutosaveManager
         page_filenames = new HashTable<Page, string> (direct_hash, direct_equal);
     }
 
+    public bool exists ()
+    {
+        var file = File.new_for_path (AUTOSAVE_PATH);
+        return file.query_exists ();
+    }
+
     public void load ()
     {
         debug ("Loading autosave information");
@@ -328,7 +334,7 @@ public class AutosaveManager
             file.set_integer (page_name, "crop-height", page.crop_height);
         }
         file.set_value ("simple-scan", "pages", page_names);
- 
+
         try
         {
             DirUtils.create_with_parents (AUTOSAVE_DIR, 0777);

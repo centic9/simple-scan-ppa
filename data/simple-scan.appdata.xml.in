@@ -4,11 +4,11 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0+ and CC-BY-SA-3.0</project_license>
   <name>Document Scanner</name>
-  <summary>Scan Documents</summary>
+  <summary>Make a digital copy of your photos and documents</summary>
   <description>
     <p>
-      A really easy way to scan both documents and photos.
-      You can crop out the bad parts of a photo and rotate it if it is the wrong way round.
+      A really easy way to scan both text and images.
+      You can crop out the bad parts of an image and rotate it if it is the wrong way round.
       You can print your scans, export them to pdf, or save them in a range of image formats.
     </p>
     <p>
@@ -19,6 +19,15 @@
     <screenshot type="default">https://launchpadlibrarian.net/203209644/simple-scan.png</screenshot>
   </screenshots>
   <url type="homepage">https://gitlab.gnome.org/GNOME/simple-scan</url>
+  <url type="bugtracker">https://gitlab.gnome.org/GNOME/simple-scan/issues</url>
+  <url type="donation">http://www.gnome.org/friends/</url>
+  <developer_name>The GNOME Project</developer_name>
+  <releases>
+    <release date="2019-09-08" version="3.34.0"/>
+    <release date="2019-05-05" version="3.32.2.1"/>
+    <release date="2019-04-09" version="3.32.2"/>
+  </releases>
+  <content_rating type="oars-1.1" />
   <update_contact>robert.ancell_AT_canonical.com</update_contact>
   <translation type="gettext">simple-scan</translation>
 </component>

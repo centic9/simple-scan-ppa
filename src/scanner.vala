@@ -385,6 +385,24 @@ public class Scanner : Object
         notify_event (new NotifyUpdateDevices ((owned) devices));
     }
 
+    private double scale_fixed (int source_min, int source_max, Sane.OptionDescriptor option, int value)
+    {
+        var v = (double) value;
+
+        return_val_if_fail (option.type == Sane.ValueType.FIXED, value);
+        if (option.constraint_type == Sane.ConstraintType.RANGE && option.range.max != option.range.min)
+        {
+            v -= (double) source_min;
+            v *= Sane.UNFIX (option.range.max) - Sane.UNFIX (option.range.min);
+            v /= (double) (source_max - source_min);
+            v += Sane.UNFIX (option.range.min);
+            debug ("scale_fixed: scaling %d [min: %d, max: %d] to %f [min: %f, max: %f]",
+                   value, source_min, source_max, v, Sane.UNFIX (option.range.min), Sane.UNFIX (option.range.max));
+        }
+
+        return v;
+    }
+
     private int scale_int (int source_min, int source_max, Sane.OptionDescriptor option, int value)
     {
         var v = value;
@@ -530,7 +548,11 @@ public class Scanner : Object
             return;
 
         var status = Sane.control_option (handle, option_index, Sane.Action.SET_VALUE, &option.range.max, null);
-        debug ("sane_control_option (%d, SANE_ACTION_SET_VALUE, option.range.max) -> (%s)", (int) option_index, Sane.status_to_string (status));
+
+        if (option.type == Sane.ValueType.FIXED)
+            debug ("sane_control_option (%d, SANE_ACTION_SET_VALUE, option.range.max=%f) -> (%s)", (int) option_index, Sane.UNFIX (option.range.max), Sane.status_to_string (status));
+        else
+            debug ("sane_control_option (%d, SANE_ACTION_SET_VALUE, option.range.max=%d) -> (%s)", (int) option_index, (int) option.range.max, Sane.status_to_string (status));
     }
 
     private bool set_string_option (Sane.Handle handle, Sane.OptionDescriptor option, Sane.Int option_index, string value, out string result)
@@ -980,6 +1002,7 @@ public class Scanner : Object
                 {
                     Sane.VALUE_SCAN_MODE_COLOR,
                     "Color",
+                    "24bit Color[Fast]", /* brother4 driver, Brother DCP-1622WE, #134 */
                     "24bit Color", /* Seen in the proprietary brother3 driver */
                     "Color - 16 Million Colors" /* Samsung unified driver. LP: 892915 */
                 };
@@ -1131,8 +1154,18 @@ public class Scanner : Object
             {
                 if (job.brightness != 0)
                 {
-                    var brightness = scale_int (-100, 100, option, job.brightness);
-                    set_int_option (handle, option, index, brightness, null);
+                    if (option.type == Sane.ValueType.FIXED)
+                    {
+                        var brightness = scale_fixed (-100, 100, option, job.brightness);
+                        set_fixed_option (handle, option, index, brightness, null);
+                    }
+                    else if (option.type == Sane.ValueType.INT)
+                    {
+                        var brightness = scale_int (-100, 100, option, job.brightness);
+                        set_int_option (handle, option, index, brightness, null);
+                    }
+                    else
+                        warning ("Unable to set brightness, please file a bug");
                 }
             }
             option = get_option_by_name (handle, Sane.NAME_CONTRAST, out index);
@@ -1140,8 +1173,18 @@ public class Scanner : Object
             {
                 if (job.contrast != 0)
                 {
-                    var contrast = scale_int (-100, 100, option, job.contrast);
-                    set_int_option (handle, option, index, contrast, null);
+                    if (option.type == Sane.ValueType.FIXED)
+                    {
+                        var contrast = scale_fixed (-100, 100, option, job.contrast);
+                        set_fixed_option (handle, option, index, contrast, null);
+                    }
+                    else if (option.type == Sane.ValueType.INT)
+                    {
+                        var contrast = scale_int (-100, 100, option, job.contrast);
+                        set_int_option (handle, option, index, contrast, null);
+                    }
+                    else
+                        warning ("Unable to set contrast, please file a bug");
                 }
             }
 
@@ -1175,10 +1218,6 @@ public class Scanner : Object
         if (option.type == Sane.ValueType.GROUP)
             return;
 
-        /* Option disabled */
-        if ((option.cap & Sane.Capability.INACTIVE) != 0)
-            return;
-
         /* Some options are unnamed (e.g. Option 0) */
         if (option.name == null)
             return;
@@ -1205,7 +1244,18 @@ public class Scanner : Object
         if (index == 0)
             return null;
 
-        return Sane.get_option_descriptor (handle, index);
+        var option_descriptor = Sane.get_option_descriptor (handle, index);
+        /*
+        The Sane.Capability.INACTIVE capability indicates that
+        the option is not currently active (e.g., because it's meaningful
+        only if another option is set to some other value).
+        */
+        if ((option_descriptor.cap & Sane.Capability.INACTIVE) != 0)
+        {
+            warning ("The option %s (%d) is inactive and can't be set, please file a bug", name, index);
+            return null;
+        }
+        return option_descriptor;
     }
 
     private void do_complete_document ()
@@ -1242,7 +1292,13 @@ public class Scanner : Object
         if (status == Sane.Status.GOOD)
             state = ScanState.GET_PARAMETERS;
         else if (status == Sane.Status.NO_DOCS)
+        {
             do_complete_document ();
+            if (page_number == 0)
+                fail_scan (status,
+                    /* Error displayed when no documents at the start of scanning */
+                    _("Document feeder empty"));
+        }
         else
         {
             warning ("Unable to start device: %s", Sane.strstatus (status));
@@ -1576,22 +1632,42 @@ public class Scanner : Object
         }
     }
 
-    private string get_scan_type_string (ScanType type)
+    public static string type_to_string (ScanType type)
     {
         switch (type)
         {
         case ScanType.SINGLE:
-            return "ScanType.SINGLE";
-        case ScanType.ADF_FRONT:
-            return "ScanType.ADF_FRONT";
-        case ScanType.ADF_BACK:
-            return "ScanType.ADF_BACK";
-        case ScanType.ADF_BOTH:
-            return "ScanType.ADF_BOTH";
+            return "single";
         case ScanType.BATCH:
-            return "ScanType.BATCH";
+            return "batch";
+        case ScanType.ADF_FRONT:
+            return "adf-front";
+        case ScanType.ADF_BACK:
+            return "adf-back";
+        case ScanType.ADF_BOTH:
+            return "adf-both";
         default:
             return "%d".printf (type);
+        }
+    }
+
+    public static ScanType type_from_string (string type)
+    {
+        switch (type)
+        {
+        case "single":
+            return ScanType.SINGLE;
+        case "batch":
+            return ScanType.BATCH;
+        case "adf-front":
+            return ScanType.ADF_FRONT;
+        case "adf-back":
+            return ScanType.ADF_BACK;
+        case "adf-both":
+            return ScanType.ADF_BOTH;
+        default:
+            warning ("Unknown ScanType: %s. Please report this error.", type);
+            return ScanType.SINGLE;
         }
     }
 
@@ -1599,7 +1675,7 @@ public class Scanner : Object
     {
         debug ("Scanner.scan (\"%s\", dpi=%d, scan_mode=%s, depth=%d, type=%s, paper_width=%d, paper_height=%d, brightness=%d, contrast=%d, delay=%dms)",
                device != null ? device : "(null)", options.dpi, get_scan_mode_string (options.scan_mode), options.depth,
-               get_scan_type_string (options.type), options.paper_width, options.paper_height,
+               type_to_string (options.type), options.paper_width, options.paper_height,
                options.brightness, options.contrast, options.page_delay);
         var request = new RequestStartScan ();
         request.job = new ScanJob ();
@@ -1634,7 +1710,7 @@ public class Scanner : Object
             thread.join ();
             thread = null;
         }
-        
+
         Sane.exit ();
         debug ("sane_exit ()");
     }
