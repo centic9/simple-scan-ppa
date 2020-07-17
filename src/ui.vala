@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Canonical Ltd.
+ * Copyright (C) 2009-2015 Canonical Ltd.
  * Author: Robert Ancell <robert.ancell@canonical.com>,
  *         Eduard Gotwig <g@ox.io>
  *
@@ -45,6 +45,7 @@ public class UserInterface : Gtk.ApplicationWindow
     private Gtk.Label info_bar_label;
     private Gtk.Button info_bar_close_button;
     private Gtk.Button info_bar_change_scanner_button;
+    private Gtk.Button info_bar_install_button;
     [GtkChild]
     private Gtk.RadioMenuItem custom_crop_menuitem;
     [GtkChild]
@@ -149,6 +150,7 @@ public class UserInterface : Gtk.ApplicationWindow
     [GtkChild]
     private Gtk.Adjustment quality_adjustment;
     private bool setting_devices;
+    private string? missing_driver = null;
     private bool user_selected_device;
 
     private Gtk.FileChooserDialog? save_dialog;
@@ -185,7 +187,6 @@ public class UserInterface : Gtk.ApplicationWindow
 
     private string document_hint = "photo";
 
-    public string default_file_name { get; set; default = _("Scanned Document.pdf"); }
     private bool scanning_ = false;
     public bool scanning
     {
@@ -204,6 +205,7 @@ public class UserInterface : Gtk.ApplicationWindow
     private int window_width;
     private int window_height;
     private bool window_is_maximized;
+    private bool window_is_fullscreen;    
 
     private uint save_state_timeout;
 
@@ -264,6 +266,7 @@ public class UserInterface : Gtk.ApplicationWindow
         book.page_added.connect (page_added_cb);
         book.reordered.connect (reordered_cb);
         book.page_removed.connect (page_removed_cb);
+        book.needs_saving_changed.connect (needs_saving_cb);
 
         load ();
 
@@ -278,7 +281,6 @@ public class UserInterface : Gtk.ApplicationWindow
         }
         else
             book_view.selected_page = book.get_page (0);
-        book.needs_saving_changed.connect (needs_saving_cb);
     }
 
     ~UserInterface ()
@@ -315,6 +317,7 @@ public class UserInterface : Gtk.ApplicationWindow
                                             "%s", error_title);
         dialog.add_button (_("_Close"), 0);
         dialog.format_secondary_text ("%s", error_text);
+        dialog.run ();
         dialog.destroy ();
     }
 
@@ -350,6 +353,7 @@ public class UserInterface : Gtk.ApplicationWindow
         Gtk.MessageType type;
         string title, text, image_id;
         bool show_close_button = false;
+        bool show_install_button = false;
         bool show_change_scanner_button = false;
 
         if (have_error)
@@ -365,10 +369,21 @@ public class UserInterface : Gtk.ApplicationWindow
         {
             type = Gtk.MessageType.WARNING;
             image_id = "dialog-warning";
-            /* Warning displayed when no scanners are detected */
-            title = _("No scanners detected");
-            /* Hint to user on why there are no scanners detected */
-            text = _("Please check your scanner is connected and powered on");
+            if (missing_driver == null)
+            {
+                /* Warning displayed when no scanners are detected */
+                title = _("No scanners detected");
+                /* Hint to user on why there are no scanners detected */
+                text = _("Please check your scanner is connected and powered on");
+            }
+            else
+            {
+                /* Warning displayed when no drivers are installed but a compatible scanner is detected */
+                title = _("Additional software needed");
+                /* Instructions to install driver software */
+                text = _("You need to install driver software for your scanner.");
+                show_install_button = true;
+            }
         }
         else
         {
@@ -382,16 +397,19 @@ public class UserInterface : Gtk.ApplicationWindow
         info_bar_label.set_markup (message);
         info_bar_close_button.visible = show_close_button;
         info_bar_change_scanner_button.visible = show_change_scanner_button;
+        info_bar_install_button.visible = show_install_button;
         info_bar.visible = true;
     }
 
-    public void set_scan_devices (List<ScanDevice> devices)
+    public void set_scan_devices (List<ScanDevice> devices, string? missing_driver = null)
     {
         bool have_selection = false;
         int index;
         Gtk.TreeIter iter;
 
         setting_devices = true;
+
+        this.missing_driver = missing_driver;
 
         /* If the user hasn't chosen a scanner choose the best available one */
         if (user_selected_device)
@@ -450,9 +468,15 @@ public class UserInterface : Gtk.ApplicationWindow
         while (device_model.iter_nth_child (out iter, null, index))
             device_model.remove (iter);
 
-        /* Select the first available device */
-        if (!have_selection && devices != null)
-            device_combo.set_active (0);
+        /* Select the previously selected device or the first available device */
+        if (!have_selection)
+        {
+            var device = settings.get_string ("selected-device");
+            if (device != null && find_scan_device (device, out iter))
+                device_combo.set_active_iter (iter);
+            else
+                device_combo.set_active (0);
+        }
 
         setting_devices = false;
 
@@ -467,31 +491,6 @@ public class UserInterface : Gtk.ApplicationWindow
                              default_page_scan_direction);
         book.append_page (page);
         book_view.selected_page = page;
-    }
-
-    private void on_file_type_changed (Gtk.TreeSelection selection)
-    {
-        var extension = get_selected_extension (selection);
-        var path = save_dialog.get_filename ();
-        var filename = Path.get_basename (path);
-
-        /* Replace extension */
-        var extension_index = filename.last_index_of_char ('.');
-        if (extension_index >= 0)
-            filename = filename.slice (0, extension_index);
-        filename = filename + extension;
-        save_dialog.set_current_name (filename);
-    }
-
-    private string get_selected_extension (Gtk.TreeSelection selection)
-    {
-        Gtk.TreeModel model;
-        Gtk.TreeIter iter;
-        string extension = "";
-
-        if (selection.get_selected (out model, out iter))
-            model.get (iter, 1, out extension, -1);
-        return extension;
     }
 
     private string choose_file_location ()
@@ -513,7 +512,8 @@ public class UserInterface : Gtk.ApplicationWindow
         save_dialog.do_overwrite_confirmation = true;
         save_dialog.local_only = false;
         save_dialog.set_current_folder (directory);
-        save_dialog.set_current_name (default_file_name);
+        /* Default filename to use when saving document */
+        save_dialog.set_current_name (_("Scanned Document.pdf"));
 
         /* Filter to only show images by default */
         var filter = new Gtk.FileFilter ();
@@ -527,16 +527,6 @@ public class UserInterface : Gtk.ApplicationWindow
                                 _("All Files"));
         filter.add_pattern ("*");
         save_dialog.add_filter (filter);
-
-        var expander = new Gtk.Expander.with_mnemonic (/* */
-                                                       _("Select File _Type"));
-        expander.spacing = 5;
-        save_dialog.set_extra_widget (expander);
-
-        string default_extension = "";
-        var index = default_file_name.last_index_of_char ('.');
-        if (index >= 0)
-            default_extension = default_file_name.substring (index);
 
         var file_type_store = new Gtk.ListStore (2, typeof (string), typeof (string));
         Gtk.TreeIter iter;
@@ -559,40 +549,54 @@ public class UserInterface : Gtk.ApplicationWindow
                              1, ".png",
                              -1);
 
-        var file_type_view = new Gtk.TreeView.with_model (file_type_store);
-        file_type_view.headers_visible = false;
-        file_type_view.rules_hint = true;
-        var column = new Gtk.TreeViewColumn.with_attributes ("",
-                                                             new Gtk.CellRendererText (),
-                                                             "text", 0, null);
-        file_type_view.append_column (column);
-        expander.add (file_type_view);
+        var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
+        box.visible = true;
+        save_dialog.set_extra_widget (box);
 
-        if (file_type_store.get_iter_first (out iter))
+        /* Label in save dialog beside combo box to choose file format (PDF, JPEG, PNG) */
+        var label = new Gtk.Label (_("File format:"));
+        label.visible = true;
+        box.pack_start (label, false, false, 0);
+
+        var file_type_combo = new Gtk.ComboBox.with_model (file_type_store);
+        file_type_combo.visible = true;
+        var renderer = new Gtk.CellRendererText ();
+        file_type_combo.pack_start (renderer, true);
+        file_type_combo.add_attribute (renderer, "text", 0);
+
+        file_type_combo.set_active (0);
+        file_type_combo.changed.connect (() =>
         {
-            do
-            {
-                string e;
-                file_type_store.get (iter, 1, out e, -1);
-                if (default_extension == e)
-                    file_type_view.get_selection ().select_iter (iter);
-            } while (file_type_store.iter_next (ref iter));
-        }
-        file_type_view.get_selection ().changed.connect (on_file_type_changed);
+            var extension = "";
+            Gtk.TreeIter i;
+            if (file_type_combo.get_active_iter (out i))
+                file_type_store.get (i, 1, out extension, -1);
 
-        expander.show_all ();
+            var path = save_dialog.get_filename ();
+            var filename = Path.get_basename (path);
+
+            /* Replace extension */
+            var extension_index = filename.last_index_of_char ('.');
+            if (extension_index >= 0)
+                filename = filename.slice (0, extension_index);
+            filename = filename + extension;
+            save_dialog.set_current_name (filename);
+        });
+        box.pack_start (file_type_combo, false, false, 0);
 
         var response = save_dialog.run ();
 
         string? uri = null;
         if (response == Gtk.ResponseType.ACCEPT)
         {
-            var selection = file_type_view.get_selection ();
-            var extension = get_selected_extension (selection);
+            var extension = "";
+            Gtk.TreeIter i;
+            if (file_type_combo.get_active_iter (out i))
+                file_type_store.get (i, 1, out extension, -1);
 
             var path = save_dialog.get_filename ();
             var filename = Path.get_basename (path);
-            
+
             var extension_index = filename.last_index_of_char ('.');
             if (extension_index < 0)
                 path += extension;
@@ -602,7 +606,6 @@ public class UserInterface : Gtk.ApplicationWindow
 
         settings.set_string ("save-directory", save_dialog.get_current_folder ());
 
-        file_type_view.get_selection ().changed.disconnect (on_file_type_changed);
         save_dialog.destroy ();
         save_dialog = null;
 
@@ -682,11 +685,10 @@ public class UserInterface : Gtk.ApplicationWindow
                 return true;
             else
                 return false;
-        case Gtk.ResponseType.CANCEL:
-            return false;
         case Gtk.ResponseType.NO:
-        default:
             return true;
+        default:
+            return false;
         }
     }
 
@@ -969,7 +971,7 @@ public class UserInterface : Gtk.ApplicationWindow
         menuitem.active = true;
         crop_button.active = page.has_crop;
         crop_toolbutton.active = page.has_crop;
-        
+
         updating_page_menu = false;
     }
 
@@ -1083,7 +1085,7 @@ public class UserInterface : Gtk.ApplicationWindow
         else
             no_crop_menuitem.active = true;
     }
-    
+
     [GtkCallback]
     private void crop_toolbutton_toggled_cb (Gtk.ToggleToolButton widget)
     {
@@ -1224,7 +1226,7 @@ public class UserInterface : Gtk.ApplicationWindow
         b = make_reorder_button (_("Reverse"), "C1C2C3C4C5C6-C6C5C4C3C2C1");
         b.clicked.connect (() =>
         {
-            book.reverse ();           
+            book.reverse ();
             dialog.destroy ();
         });
         b.visible = true;
@@ -1256,7 +1258,7 @@ public class UserInterface : Gtk.ApplicationWindow
     private Gtk.Button make_reorder_button (string text, string items)
     {
         var b = new Gtk.Button ();
-        
+
         var vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 6);
         vbox.visible = true;
         b.add (vbox);
@@ -1407,7 +1409,7 @@ public class UserInterface : Gtk.ApplicationWindow
     {
         email (document_hint, quality);
     }
-    
+
     private void print_document ()
     {
         var print = new Gtk.PrintOperation ();
@@ -1484,7 +1486,7 @@ public class UserInterface : Gtk.ApplicationWindow
                                "authors", authors,
                                "translator-credits", _("translator-credits"),
                                "website", "https://launchpad.net/simple-scan",
-                               "copyright", "Copyright © 2009-2011 Canonical Ltd.",
+                               "copyright", "Copyright © 2009-2015 Canonical Ltd.",
                                "license", license,
                                "wrap-license", true,
                                null);
@@ -1530,44 +1532,193 @@ public class UserInterface : Gtk.ApplicationWindow
         on_quit ();
     }
 
-    [GtkCallback]
-    private bool simple_scan_window_configure_event_cb (Gtk.Widget widget, Gdk.EventConfigure event)
+    public override void size_allocate (Gtk.Allocation allocation)
     {
-        if (!window_is_maximized)
+        base.size_allocate (allocation);
+
+        if (!window_is_maximized && !window_is_fullscreen)
         {
-            window_width = event.width;
-            window_height = event.height;
+            get_size (out window_width, out window_height);
             save_state ();
         }
-
-        return false;
     }
 
     private void info_bar_response_cb (Gtk.InfoBar widget, int response_id)
     {
-        if (response_id == 1)
+        switch (response_id)
         {
+        /* Change scanner */
+        case 1:
             device_combo.grab_focus ();
             preferences_dialog.present ();
-        }
-        else
-        {
+            break;
+        /* Install drivers */
+        case 2:
+            install_drivers ();
+            break;
+        default:
             have_error = false;
             error_title = null;
             error_text = null;
             update_info_bar ();
+            break;
         }
     }
 
-    [GtkCallback]
-    private bool simple_scan_window_window_state_event_cb (Gtk.Widget widget, Gdk.EventWindowState event)
+    private void install_drivers ()
     {
+        var message = "", instructions = "";
+        string[] packages_to_install = {};
+        switch (missing_driver)
+        {
+        case "brscan":
+        case "brscan2":
+        case "brscan3":
+        case "brscan4":
+            /* Message to indicate a Brother scanner has been detected */
+            message = _("You appear to have a Brother scanner.");
+            /* Instructions on how to install Brother scanner drivers */
+            instructions = _("Drivers for this are available on the <a href=\"http://support.brother.com\">Brother website</a>.");
+            break;
+        case "samsung":
+            /* Message to indicate a Samsung scanner has been detected */
+            message = _("You appear to have a Samsung scanner.");
+            /* Instructions on how to install Samsung scanner drivers */
+            instructions = _("Drivers for this are available on the <a href=\"http://samsung.com/support\">Samsung website</a>.");
+            break;
+        case "hpaio":
+            /* Message to indicate a HP scanner has been detected */
+            message = _("You appear to have an HP scanner.");
+            packages_to_install = { "libsane-hpaio" };
+            break;
+        case "epkowa":
+            /* Message to indicate an Epson scanner has been detected */
+            message = _("You appear to have an Epson scanner.");
+            /* Instructions on how to install Epson scanner drivers */
+            instructions = _("Drivers for this are available on the <a href=\"http://support.epson.com\">Epson website</a>.");
+            break;
+        }
+        var dialog = new Gtk.Dialog.with_buttons (/* Title of dialog giving instructions on how to install drivers */
+                                                  _("Install drivers"), this, Gtk.DialogFlags.MODAL, _("_Close"), Gtk.ResponseType.CLOSE);
+        dialog.get_content_area ().border_width = 12;
+        dialog.get_content_area ().spacing = 6;
+
+        var label = new Gtk.Label (message);
+        label.visible = true;
+        label.xalign = 0f;
+        dialog.get_content_area ().pack_start (label, true, true, 0);
+
+        var instructions_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
+        instructions_box.visible = true;
+        dialog.get_content_area ().pack_start (instructions_box, true, true, 0);
+        
+        var stack = new Gtk.Stack ();
+        instructions_box.pack_start (stack, false, false, 0);
+
+        var spinner = new Gtk.Spinner ();
+        spinner.visible = true;
+        stack.add (spinner);
+
+        var status_label = new Gtk.Label ("");
+        status_label.visible = true;
+        stack.add (status_label);
+
+        var instructions_label = new Gtk.Label (instructions);
+        instructions_label.visible = true;
+        instructions_label.xalign = 0f;        
+        instructions_label.use_markup = true;
+        instructions_box.pack_start (instructions_label, false, false, 0);
+
+        label = new Gtk.Label (/* Message in driver install dialog */
+                               _("Once installed you will need to restart Simple Scan."));
+        label.visible = true;
+        label.xalign = 0f;        
+        dialog.get_content_area ().border_width = 12;
+        dialog.get_content_area ().pack_start (label, true, true, 0);
+
+        if (packages_to_install.length > 0)
+        {
+#if HAVE_PACKAGEKIT
+            stack.visible = true;
+            spinner.active = true;
+            instructions_label.set_text (/* Label shown while installing drivers */
+                                         _("Installing drivers..."));
+            install_packages.begin (packages_to_install, () => {}, (object, result) =>
+            {
+                status_label.visible = true;
+                spinner.active = false;
+                status_label.set_text ("☒");
+                stack.visible_child = status_label;
+                /* Label shown once drivers successfully installed */
+                var result_text = _("Drivers installed successfully!");
+                try
+                {
+                    var results = install_packages.end (result);
+                    if (results.get_error_code () == null)
+                        status_label.set_text ("☑");
+                    else
+                    {
+                        var e = results.get_error_code ();
+                        /* Label shown if failed to install drivers */
+                        result_text = _("Failed to install drivers (error code %d).").printf (e.code);
+                    }
+                }
+                catch (Error e)
+                {
+                    /* Label shown if failed to install drivers */
+                    result_text = _("Failed to install drivers.");
+                    warning ("Failed to install drivers: %s", e.message);
+                }
+                instructions_label.set_text (result_text);
+            });
+#else
+            instructions_label.set_text (/* Label shown to prompt user to install packages (when PackageKit not available) */
+                                         _("You need to install the %s package(s).").printf (string.joinv (", ", packages_to_install)));
+#endif
+        }
+
+        dialog.run ();
+        dialog.destroy ();
+    }
+
+#if HAVE_PACKAGEKIT
+    private async Pk.Results? install_packages (string[] packages, Pk.ProgressCallback progress_callback) throws GLib.Error
+    {
+        var task = new Pk.Task ();
+        Pk.Results results;
+        results = yield task.resolve_async (Pk.Filter.NOT_INSTALLED, packages, null, progress_callback);
+        if (results == null || results.get_error_code () != null)
+            return results;
+
+        var package_array = results.get_package_array ();
+        var package_ids = new string[package_array.length + 1];
+        package_ids[package_array.length] = null;
+        for (var i = 0; i < package_array.length; i++)
+            package_ids[i] = package_array.data[i].get_id ();
+
+        return yield task.install_packages_async (package_ids, null, progress_callback);
+    }
+#endif
+
+    public override bool window_state_event (Gdk.EventWindowState event)
+    {
+        var result = Gdk.EVENT_PROPAGATE;
+
+        if (base.window_state_event != null)
+            result = base.window_state_event (event);
+
         if ((event.changed_mask & Gdk.WindowState.MAXIMIZED) != 0)
         {
             window_is_maximized = (event.new_window_state & Gdk.WindowState.MAXIMIZED) != 0;
             save_state ();
         }
-        return false;
+        if ((event.changed_mask & Gdk.WindowState.FULLSCREEN) != 0)
+        {
+            window_is_fullscreen = (event.new_window_state & Gdk.WindowState.FULLSCREEN) != 0;
+            save_state ();
+        }
+
+        return result;
     }
 
     [GtkCallback]
@@ -1611,7 +1762,7 @@ public class UserInterface : Gtk.ApplicationWindow
         page.scan_direction_changed.disconnect (page_scan_direction_changed_cb);
 
         /* If this is the last page add a new blank one */
-        if (book.n_pages == 1)
+        if (book.n_pages == 0)
             add_default_page ();
 
         update_page_menu ();
@@ -1660,16 +1811,6 @@ public class UserInterface : Gtk.ApplicationWindow
         copy_to_clipboard_menuitem.sensitive = true;
     }
 
-    private bool shell_shows_menubar
-    {
-        get
-        {
-            bool shell_shows_menubar;
-            Gtk.Settings.get_default ().get ("gtk-shell-shows-menubar", out shell_shows_menubar);
-            return shell_shows_menubar;
-        }
-    }
-
     private void load ()
     {
         Gtk.IconTheme.get_default ().append_search_path (ICON_DIR);
@@ -1678,7 +1819,13 @@ public class UserInterface : Gtk.ApplicationWindow
 
         var app = Application.get_default () as Gtk.Application;
 
-        if (!shell_shows_menubar)
+        if (is_desktop ("Unity") || is_desktop ("XFCE") || is_desktop ("MATE") || is_desktop ("LXDE"))
+        {
+            set_titlebar (null);
+            menubar.visible = true;
+            toolbar.visible = true;
+        }
+        else
         {
             app.add_action_entries (action_entries, this);
 
@@ -1717,12 +1864,6 @@ public class UserInterface : Gtk.ApplicationWindow
             app.add_accelerator ("F1", "app.help", null);
             app.add_accelerator ("<Ctrl>Q", "app.quit", null);
         }
-        else
-        {
-            set_titlebar (null);
-            menubar.visible = true;
-            toolbar.visible = true;
-        }
         app.add_window (this);
 
         /* Add InfoBar (not supported in Glade) */
@@ -1746,6 +1887,8 @@ public class UserInterface : Gtk.ApplicationWindow
         info_bar_close_button = info_bar.add_button (_("_Close"), Gtk.ResponseType.CLOSE) as Gtk.Button;
         info_bar_change_scanner_button = info_bar.add_button (/* Button in error infobar to open preferences dialog and change scanner */
                                                               _("Change _Scanner"), 1) as Gtk.Button;
+        info_bar_install_button = info_bar.add_button (/* Button in error infobar to prompt user to install drivers */
+                                                       _("_Install Drivers"), 2) as Gtk.Button;
 
         Gtk.TreeIter iter;
         paper_size_model.append (out iter);
@@ -1830,13 +1973,6 @@ public class UserInterface : Gtk.ApplicationWindow
         quality = settings.get_int ("jpeg-quality");
         quality_adjustment.value_changed.connect (() => { settings.set_int ("jpeg-quality", quality); });
 
-        var device = settings.get_string ("selected-device");
-        if (device != null)
-        {
-            if (find_scan_device (device, out iter))
-                device_combo.set_active_iter (iter);
-        }
-
         var document_type = settings.get_string ("document-type");
         if (document_type != null)
             set_document_hint (document_type);
@@ -1863,11 +1999,29 @@ public class UserInterface : Gtk.ApplicationWindow
             debug ("Restoring window to maximized");
             maximize ();
         }
+        if (window_is_fullscreen)
+        {
+            debug ("Restoring window to fullscreen");
+            fullscreen ();
+        }
 
         progress_dialog = new ProgressBarDialog (this, _("Saving document..."));
         book.saving.connect (book_saving_cb);
     }
-    
+
+    private bool is_desktop (string name)
+    {
+        var desktop_name_list = Environment.get_variable ("XDG_CURRENT_DESKTOP");
+        if (desktop_name_list == null)
+            return false;
+
+        foreach (var n in desktop_name_list.split (":"))
+            if (n == name)
+                return true;
+
+        return false;
+    }
+
     private string state_filename
     {
         owned get { return Path.build_filename (Environment.get_user_cache_dir (), "simple-scan", "state"); }
@@ -1894,6 +2048,7 @@ public class UserInterface : Gtk.ApplicationWindow
         if (window_height <= 0)
             window_height = 400;
         window_is_maximized = state_get_boolean (f, "window", "is-maximized");
+        window_is_fullscreen = state_get_boolean (f, "window", "is-fullscreen");
         default_page_width = state_get_integer (f, "last-page", "width", 595);
         default_page_height = state_get_integer (f, "last-page", "height", 842);
         default_page_dpi = state_get_integer (f, "last-page", "dpi", 72);
@@ -1972,6 +2127,7 @@ public class UserInterface : Gtk.ApplicationWindow
         f.set_integer ("window", "width", window_width);
         f.set_integer ("window", "height", window_height);
         f.set_boolean ("window", "is-maximized", window_is_maximized);
+        f.set_boolean ("window", "is-fullscreen", window_is_fullscreen);        
         f.set_integer ("last-page", "width", default_page_width);
         f.set_integer ("last-page", "height", default_page_height);
         f.set_integer ("last-page", "dpi", default_page_dpi);
@@ -2048,7 +2204,7 @@ public class UserInterface : Gtk.ApplicationWindow
 private class ProgressBarDialog : Gtk.Window
 {
     private Gtk.ProgressBar bar;
-    
+
     public double fraction
     {
         get { return bar.fraction; }

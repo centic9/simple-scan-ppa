@@ -6,12 +6,14 @@
         <link type="guide" xref="index#acquire"/>
     </info>
   
-	<title>Scannen einer Seite</title>
+	<title>Eine Seite scannen</title>
 
-    <p>So scannen Sie ein Dokument mit ihrem Scanner ein:</p>
+    <p>
+    To scan a document from your scanner:
+    </p>
     <steps>
       <item><p>Connect the scanner to your computer and power it on.</p></item>
-      <item><p>Open <app>Simple Scan</app>.</p></item>
+      <item><p>Öffnen Sie <app>Simple Scan</app>.</p></item>
       <item><p>Click the arrow to the right of the "Scan" button and choose the type
 	     of document you are scanning: <em>Photo</em> or <em>Text</em>.</p>
 	     <media type="image" src="figures/scan_toolbar.png"/></item>

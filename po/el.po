@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: simple-scan\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2014-08-18 17:31+1200\n"
+"POT-Creation-Date: 2015-11-27 09:10+1300\n"
 "PO-Revision-Date: 2013-07-03 07:45+0000\n"
 "Last-Translator: John Pag <ioanpagges@gmail.com>\n"
 "Language-Team: Greek <el@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-08-19 06:31+0000\n"
-"X-Generator: Launchpad (build 17156)\n"
+"X-Launchpad-Export-Date: 2015-12-22 04:38+0000\n"
+"X-Generator: Launchpad (build 17865)\n"
 
 #. Button to submit authorization dialog
 #: ../data/simple-scan.ui.h:2
@@ -49,6 +49,7 @@ msgstr "Πίσω όψη"
 
 #. Title of scan window
 #: ../data/simple-scan.ui.h:14 ../data/simple-scan.desktop.in.h:1
+#: ../data/appdata/simple-scan.appdata.xml.in.h:1
 msgid "Simple Scan"
 msgstr "Σάρωση"
 
@@ -87,9 +88,9 @@ msgstr "Φωτογραφία"
 
 #. Menu item to reorder pages
 #. Title of dialog to reorder pages
-#: ../data/simple-scan.ui.h:28 ../src/ui.vala:1181 ../src/ui.vala:1694
+#: ../data/simple-scan.ui.h:28 ../src/ui.vala:1182 ../src/ui.vala:1832
 msgid "Reorder Pages"
-msgstr ""
+msgstr "Επαναδιάταξη σελίδων"
 
 #. Label on email menu item
 #: ../data/simple-scan.ui.h:30
@@ -205,7 +206,7 @@ msgstr "Σάρωση"
 msgid "Save document to a file"
 msgstr "Αποθήκευση εγγράφου σε αρχείο"
 
-#: ../data/simple-scan.ui.h:74 ../src/ui.vala:1695
+#: ../data/simple-scan.ui.h:74 ../src/ui.vala:1833
 msgid "Save"
 msgstr "Αποθήκευση"
 
@@ -247,7 +248,7 @@ msgid "Crop"
 msgstr "Περικοπή"
 
 #. Title of preferences dialog
-#: ../data/simple-scan.ui.h:89 ../src/ui.vala:1702
+#: ../data/simple-scan.ui.h:89 ../src/ui.vala:1840
 msgid "Preferences"
 msgstr "Προτιμήσεις"
 
@@ -292,8 +293,16 @@ msgid "Quality:"
 msgstr "Ποιότητα:"
 
 #: ../data/simple-scan.desktop.in.h:2
+msgid "Document Scanner"
+msgstr "Σαρωτής εγγράφων"
+
+#: ../data/simple-scan.desktop.in.h:3
 msgid "Scan Documents"
 msgstr "Σάρωση εγγράφων"
+
+#: ../data/simple-scan.desktop.in.h:4
+msgid "scan;scanner;flatbed;adf;"
+msgstr ""
 
 #: ../data/org.gnome.SimpleScan.gschema.xml.in.h:1
 msgid "Device to scan from"
@@ -401,23 +410,36 @@ msgstr "Τιμή της ποιότητας που θα χρησιμοποιηθ�
 msgid "Quality value to use for JPEG compression."
 msgstr "Τιμή της ποιότητας που θα χρησιμοποιηθεί για τη συμπίεση JPEG."
 
+#: ../data/appdata/simple-scan.appdata.xml.in.h:2
+msgid ""
+"A really easy way to scan both documents and photos. You can crop out the "
+"bad parts of a photo and rotate it if it is the wrong way round. You can "
+"print your scans, export them to pdf, or save them in a range of image "
+"formats."
+msgstr ""
+
+#: ../data/appdata/simple-scan.appdata.xml.in.h:3
+msgid ""
+"Simple Scan uses the SANE framework to support most existing scanners."
+msgstr ""
+
 #. Error displayed when no scanners to scan with
-#: ../src/scanner.vala:840
+#: ../src/scanner.vala:841
 msgid "No scanners available.  Please connect a scanner."
 msgstr "Δεν υπάρχουν διαθέσιμοι σαρωτές. Παρακαλούμε συνδέστε ένα σαρωτή."
 
 #. Error displayed when cannot connect to scanner
-#: ../src/scanner.vala:870
+#: ../src/scanner.vala:871
 msgid "Unable to connect to scanner"
 msgstr "Αδύνατη η σύνδεση με τον σαρωτή"
 
 #. Error display when unable to start scan
-#: ../src/scanner.vala:1222
+#: ../src/scanner.vala:1223
 msgid "Unable to start scan"
 msgstr "Αδύνατη η εκκίνηση της σάρωσης"
 
 #. Error displayed when communication with scanner broken
-#: ../src/scanner.vala:1235 ../src/scanner.vala:1332
+#: ../src/scanner.vala:1236 ../src/scanner.vala:1333
 msgid "Error communicating with scanner"
 msgstr "Σφάλμα κατά την επικοινωνία με τον σαρωτή"
 
@@ -438,154 +460,160 @@ msgstr ""
 "λογισμικού Simple Scan"
 
 #. Title of error dialog when scan failed
-#: ../src/simple-scan.vala:297
+#: ../src/simple-scan.vala:391
 msgid "Failed to scan"
 msgstr "Η σάρωση απέτυχε"
 
-#. Default filename to use when saving document (and extension will be added, e.g. .jpg)
-#: ../src/simple-scan.vala:316
-msgid "Scanned Document"
-msgstr "Σαρωμένο"
-
 #. Arguments and description for --help text
-#: ../src/simple-scan.vala:543
+#: ../src/simple-scan.vala:621
 msgid "[DEVICE...] - Scanning utility"
 msgstr "[ΣΥΣΚΕΥΗ…] - Εφαρμογή σάρωσης"
 
 #. Text printed out when an unknown command-line argument provided
-#: ../src/simple-scan.vala:554
+#: ../src/simple-scan.vala:632
 #, c-format
 msgid "Run '%s --help' to see a full list of available command line options."
 msgstr ""
 "Εκτελέστε «%s --help» για να δείτε την πλήρη λίστα των διαθέσιμων επιλογών "
 "εντολής γραμμής."
 
-#: ../src/ui.vala:188
-msgid "Scanned Document.pdf"
-msgstr "Σαρωμένο.pdf"
-
-#: ../src/ui.vala:316 ../src/ui.vala:1746
+#: ../src/ui.vala:317 ../src/ui.vala:1603 ../src/ui.vala:1878
 msgid "_Close"
 msgstr "_Κλείσιμο"
 
 #. Label in authorization dialog.  '%s' is replaced with the name of the resource requesting authorization
-#: ../src/ui.vala:324
+#: ../src/ui.vala:326
 #, c-format
 msgid "Username and password required to access '%s'"
 msgstr "Απαιτείται όνομα χρήστη και κωδικός για την πρόσβαση στο '%s'"
 
 #. Warning displayed when no scanners are detected
-#: ../src/ui.vala:369
+#: ../src/ui.vala:374
 msgid "No scanners detected"
 msgstr "Δεν ανιχνεύθηκαν σαρωτές"
 
 #. Hint to user on why there are no scanners detected
-#: ../src/ui.vala:371
+#: ../src/ui.vala:376
 msgid "Please check your scanner is connected and powered on"
 msgstr ""
 "Παρακαλούμε βεβαιωθείτε ότι ο σαρωτής σας είναι συνδεδεμένος και σε "
 "λειτουργία"
 
+#. Warning displayed when no drivers are installed but a compatible scanner is detected
+#: ../src/ui.vala:381
+msgid "Additional software needed"
+msgstr ""
+
+#. Instructions to install driver software
+#: ../src/ui.vala:383
+msgid "You need to install driver software for your scanner."
+msgstr ""
+
 #. Save dialog: Dialog title
-#: ../src/ui.vala:507 ../src/ui.vala:1696
+#: ../src/ui.vala:505 ../src/ui.vala:1834
 msgid "Save As..."
 msgstr "Αποθήκευση ως..."
 
-#: ../src/ui.vala:510 ../src/ui.vala:672
+#: ../src/ui.vala:508 ../src/ui.vala:674
 msgid "_Cancel"
 msgstr "_Ακύρωση"
 
-#: ../src/ui.vala:511 ../src/ui.vala:673
+#: ../src/ui.vala:509 ../src/ui.vala:675
 msgid "_Save"
 msgstr "Απο_θήκευση"
 
+#. Default filename to use when saving document
+#: ../src/ui.vala:515
+msgid "Scanned Document.pdf"
+msgstr "Σαρωμένο.pdf"
+
 #. Save dialog: Filter name to show only image files
-#: ../src/ui.vala:521
+#: ../src/ui.vala:520
 msgid "Image Files"
 msgstr "Αρχεία εικόνων"
 
 #. Save dialog: Filter name to show all files
-#: ../src/ui.vala:527
+#: ../src/ui.vala:526
 msgid "All Files"
 msgstr "Όλα τα αρχεία"
 
-#. 
-#: ../src/ui.vala:532
-msgid "Select File _Type"
-msgstr "Επιλογή _τύπου αρχείου"
-
 #. Save dialog: Label for saving in PDF format
-#: ../src/ui.vala:546
+#: ../src/ui.vala:535
 msgid "PDF (multi-page document)"
 msgstr "PDF (έγγραφο πολλαπλών σελίδων)"
 
 #. Save dialog: Label for saving in JPEG format
-#: ../src/ui.vala:552
+#: ../src/ui.vala:541
 msgid "JPEG (compressed)"
 msgstr "JPEG (συμπιεσμένο)"
 
 #. Save dialog: Label for saving in PNG format
-#: ../src/ui.vala:558
+#: ../src/ui.vala:547
 msgid "PNG (lossless)"
 msgstr "PNG (δίχως συμπίεση)"
 
+#. Label in save dialog beside combo box to choose file format (PDF, JPEG, PNG)
+#: ../src/ui.vala:556
+msgid "File format:"
+msgstr ""
+
 #. Title of error dialog when save failed
-#: ../src/ui.vala:647
+#: ../src/ui.vala:649
 msgid "Failed to save file"
 msgstr "Αποτυχία αποθήκευσης του αρχείου"
 
 #. Text in dialog warning when a document is about to be lost
-#: ../src/ui.vala:670
+#: ../src/ui.vala:672
 msgid "If you don't save, changes will be permanently lost."
 msgstr "Αν δεν αποθηκεύσετε, οι αλλαγές θα χαθούν μόνιμα."
 
 #. Text in dialog warning when a document is about to be lost
-#: ../src/ui.vala:706
+#: ../src/ui.vala:707
 msgid "Save current document?"
 msgstr "Αποθήκευση του τρέχοντος εγγράφου;"
 
 #. Button in dialog to create new document and discard unsaved document
-#: ../src/ui.vala:708
+#: ../src/ui.vala:709
 msgid "Discard Changes"
 msgstr "Απόρριψη αλλαγών"
 
 #. Error message display when unable to save image for preview
-#: ../src/ui.vala:990
+#: ../src/ui.vala:991
 msgid "Unable to save image for preview"
 msgstr "Αδυναμία αποθήκευσης σελίδας για προεπισκόπηση"
 
 #. Error message display when unable to preview image
-#: ../src/ui.vala:1002
+#: ../src/ui.vala:1003
 msgid "Unable to open image preview application"
 msgstr "Αδύνατο το άνοιγμα της εφαρμογής προβολής εικόνων"
 
 #. Label on button for combining sides in reordering dialog
-#: ../src/ui.vala:1204
+#: ../src/ui.vala:1205
 msgid "Combine sides"
 msgstr ""
 
 #. Label on button for combining sides in reverse order in reordering dialog
-#: ../src/ui.vala:1214
+#: ../src/ui.vala:1215
 msgid "Combine sides (reverse)"
 msgstr ""
 
 #. Label on button for reversing in reordering dialog
-#: ../src/ui.vala:1224
+#: ../src/ui.vala:1225
 msgid "Reverse"
 msgstr ""
 
 #. Label on button for cancelling page reordering dialog
-#: ../src/ui.vala:1234
+#: ../src/ui.vala:1235
 msgid "Keep unchanged"
-msgstr ""
+msgstr "Διατήρηση αμετάβλητων"
 
 #. Error message displayed when unable to launch help browser
-#: ../src/ui.vala:1449
+#: ../src/ui.vala:1450
 msgid "Unable to open help file"
 msgstr "Αδύνατο το άνοιγμα του αρχείου βοήθειας"
 
 #. The license this software is under (GPL3+)
-#: ../src/ui.vala:1470
+#: ../src/ui.vala:1471
 msgid ""
 "This program is free software: you can redistribute it and/or modify\n"
 "it under the terms of the GNU General Public License as published by\n"
@@ -617,19 +645,20 @@ msgstr ""
 "εδώ: <http://www.gnu.org/licenses/>."
 
 #. Title of about dialog
-#: ../src/ui.vala:1473
+#: ../src/ui.vala:1474
 msgid "About Simple Scan"
 msgstr "Περί Σάρωσης"
 
 #. Description of program
-#: ../src/ui.vala:1476
+#: ../src/ui.vala:1477
 msgid "Simple document scanning tool"
 msgstr "Απλό εργαλείο σάρωσης εγγράφων"
 
-#: ../src/ui.vala:1485
+#: ../src/ui.vala:1486
 msgid "translator-credits"
 msgstr ""
 "Launchpad Contributions:\n"
+"  Aggelos Arnaoutis https://launchpad.net/~angelosarn\n"
 "  Alex Ferguson https://launchpad.net/~thoughtmonster\n"
 "  Christos Spyroglou https://launchpad.net/~cspyroglou\n"
 "  Filippos Kolyvas https://launchpad.net/~fkol-k4\n"
@@ -645,106 +674,189 @@ msgstr ""
 "  trix https://launchpad.net/~panelc"
 
 #. Text in dialog warning when a document is about to be lost
-#: ../src/ui.vala:1507
+#: ../src/ui.vala:1508
 msgid "Save document before quitting?"
 msgstr "Αποθήκευση του εγγράφου πριν την έξοδο;"
 
 #. Button in dialog to quit and discard unsaved document
-#: ../src/ui.vala:1509
+#: ../src/ui.vala:1510
 msgid "Quit without Saving"
 msgstr "Έξοδος χωρίς Αποθήκευση"
 
+#. Message to indicate a Brother scanner has been detected
+#: ../src/ui.vala:1580
+msgid "You appear to have a Brother scanner."
+msgstr ""
+
+#. Instructions on how to install Brother scanner drivers
+#: ../src/ui.vala:1582
+msgid ""
+"Drivers for this are available on the <a "
+"href=\"http://support.brother.com\">Brother website</a>."
+msgstr ""
+
+#. Message to indicate a Samsung scanner has been detected
+#: ../src/ui.vala:1586
+msgid "You appear to have a Samsung scanner."
+msgstr ""
+
+#. Instructions on how to install Samsung scanner drivers
+#: ../src/ui.vala:1588
+msgid ""
+"Drivers for this are available on the <a "
+"href=\"http://samsung.com/support\">Samsung website</a>."
+msgstr ""
+
+#. Message to indicate a HP scanner has been detected
+#: ../src/ui.vala:1592
+msgid "You appear to have an HP scanner."
+msgstr ""
+
+#. Message to indicate an Epson scanner has been detected
+#: ../src/ui.vala:1597
+msgid "You appear to have an Epson scanner."
+msgstr ""
+
+#. Instructions on how to install Epson scanner drivers
+#: ../src/ui.vala:1599
+msgid ""
+"Drivers for this are available on the <a "
+"href=\"http://support.epson.com\">Epson website</a>."
+msgstr ""
+
+#. Title of dialog giving instructions on how to install drivers
+#: ../src/ui.vala:1603
+msgid "Install drivers"
+msgstr ""
+
+#. Message in driver install dialog
+#: ../src/ui.vala:1634
+msgid "Once installed you will need to restart Simple Scan."
+msgstr ""
+
+#. Label shown while installing drivers
+#: ../src/ui.vala:1646
+msgid "Installing drivers..."
+msgstr ""
+
+#. Label shown once drivers successfully installed
+#: ../src/ui.vala:1654
+msgid "Drivers installed successfully!"
+msgstr ""
+
+#. Label shown if failed to install drivers
+#: ../src/ui.vala:1664
+#, c-format
+msgid "Failed to install drivers (error code %d)."
+msgstr ""
+
+#. Label shown if failed to install drivers
+#: ../src/ui.vala:1670
+msgid "Failed to install drivers."
+msgstr ""
+
+#. Label shown to prompt user to install packages (when PackageKit not available)
+#: ../src/ui.vala:1677
+#, c-format
+msgid "You need to install the %s package(s)."
+msgstr ""
+
 #. Preferences dialog: Label for default resolution in resolution list
-#: ../src/ui.vala:1633
+#: ../src/ui.vala:1775
 #, c-format
 msgid "%d dpi (default)"
 msgstr "%d dpi (προεπιλογή)"
 
 #. Preferences dialog: Label for minimum resolution in resolution list
-#: ../src/ui.vala:1636
+#: ../src/ui.vala:1778
 #, c-format
 msgid "%d dpi (draft)"
 msgstr "%d dpi (πρόχειρο)"
 
 #. Preferences dialog: Label for maximum resolution in resolution list
-#: ../src/ui.vala:1639
+#: ../src/ui.vala:1781
 #, c-format
 msgid "%d dpi (high resolution)"
 msgstr "%d dpi (υψηλή ανάλυση)"
 
 #. Preferences dialog: Label for resolution value in resolution list (dpi = dots per inch)
-#: ../src/ui.vala:1642
+#: ../src/ui.vala:1784
 #, c-format
 msgid "%d dpi"
 msgstr "%d dpi"
 
-#: ../src/ui.vala:1688
+#: ../src/ui.vala:1826
 msgid "New Document"
-msgstr ""
+msgstr "Νέο έγγραφο"
 
-#: ../src/ui.vala:1693
+#: ../src/ui.vala:1831
 msgid "Document"
-msgstr ""
+msgstr "Έγγραφο"
 
-#: ../src/ui.vala:1697
+#: ../src/ui.vala:1835
 msgid "Email..."
-msgstr ""
+msgstr "Ηλεκτρονική αλληλογραφία..."
 
-#: ../src/ui.vala:1698
+#: ../src/ui.vala:1836
 msgid "Print..."
-msgstr ""
+msgstr "Εκτύπωση..."
 
-#: ../src/ui.vala:1706
+#: ../src/ui.vala:1844
 msgid "Help"
-msgstr ""
+msgstr "Βοήθεια"
 
-#: ../src/ui.vala:1707
+#: ../src/ui.vala:1845
 msgid "About"
-msgstr ""
+msgstr "Περί"
 
-#: ../src/ui.vala:1708
+#: ../src/ui.vala:1846
 msgid "Quit"
-msgstr ""
+msgstr "'Εξοδος"
 
 #. Button in error infobar to open preferences dialog and change scanner
-#: ../src/ui.vala:1748
+#: ../src/ui.vala:1880
 msgid "Change _Scanner"
 msgstr "Αλλαγή _σαρωτή"
 
+#. Button in error infobar to prompt user to install drivers
+#: ../src/ui.vala:1882
+msgid "_Install Drivers"
+msgstr ""
+
 #. Combo box value for automatic paper size
-#: ../src/ui.vala:1754
+#: ../src/ui.vala:1888
 msgid "Automatic"
 msgstr "Αυτόματο"
 
-#: ../src/ui.vala:1804
+#: ../src/ui.vala:1938
 msgid "Darker"
 msgstr "Σκοτεινότερο"
 
-#: ../src/ui.vala:1806
+#: ../src/ui.vala:1940
 msgid "Lighter"
 msgstr "Φωτεινότερο"
 
-#: ../src/ui.vala:1814
+#: ../src/ui.vala:1948
 msgid "Less"
 msgstr "Λιγότερο"
 
-#: ../src/ui.vala:1816
+#: ../src/ui.vala:1950
 msgid "More"
 msgstr "Περισσότερο"
 
-#: ../src/ui.vala:1824
+#: ../src/ui.vala:1958
 msgid "Minimum"
 msgstr "Ελάχιστο"
 
-#: ../src/ui.vala:1826
+#: ../src/ui.vala:1960
 msgid "Maximum"
 msgstr "Μέγιστο"
 
-#: ../src/ui.vala:1867
+#: ../src/ui.vala:1994
 msgid "Saving document..."
 msgstr "Αποθήκευση εγγράφου..."
 
-#: ../src/ui.vala:2017
+#: ../src/ui.vala:2157
 #, c-format
 msgid "Saving page %d out of %d"
 msgstr "Αποθήκευση σελίδας %d από %d"
@@ -820,6 +932,9 @@ msgstr "Αποθήκευση σελίδας %d από %d"
 #~ "  --help-all Εμφάνιση όλων των επιλογών βοήθειας\n"
 #~ "  --help-gtk Εμφάνιση επιλογών GTK+"
 
+#~ msgid "Select File _Type"
+#~ msgstr "Επιλογή _τύπου αρχείου"
+
 #~ msgid "Files missing"
 #~ msgstr "Λείπουν αρχεία"
 
@@ -859,6 +974,9 @@ msgstr "Αποθήκευση σελίδας %d από %d"
 #~ "  --sync                          Να είναι σύγχρονες οι κλήσεις στο X\n"
 #~ "  --gtk-module=MODULES            Φόρτωση πρόσθετων αρθρωμάτων GTK+\n"
 #~ "  --g-fatal-warnings              Να είναι όλες οι προειδοποιήσεις μοιραίες"
+
+#~ msgid "Scanned Document"
+#~ msgstr "Σαρωμένο"
 
 #~ msgid "The direction of the scanner across the scanned page."
 #~ msgstr "Ο προσανατολισμός του σαρωτή  στη σαρωμένη σελίδα"

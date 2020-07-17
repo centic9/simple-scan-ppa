@@ -17,5 +17,7 @@
     Conversely, if the document type was set to "Photo", the email will have a JPEG
     attachment for each page.    
     </p>
-    <p>In <link xref="save"/> finden Sie weitere Informationen über Dateiformate.</p>
+    <p>
+    See <link xref="save"/> for more information about file formats.
+    </p>
 </page>

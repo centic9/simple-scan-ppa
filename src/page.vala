@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Canonical Ltd.
+ * Copyright (C) 2009-2015 Canonical Ltd.
  * Author: Robert Ancell <robert.ancell@canonical.com>
  *
  * This program is free software: you can redistribute it and/or modify it under
@@ -662,30 +662,30 @@ public class Page
 
         if (strcmp (type, "jpeg") == 0)
         {
-            string[] keys = { "quality", "density-unit", "x-density", "y-density", "icc-profile", null };
-            string[] values = { "%d".printf (quality), "dots-per-inch", "%d".printf (dpi), "%d".printf (dpi), icc_profile_data, null };
+            string[] keys = { "x-dpi", "y-dpi", "quality", "icc-profile", null };
+            string[] values = { "%d".printf (dpi), "%d".printf (dpi), "%d".printf (quality), icc_profile_data, null };
             if (icc_profile_data == null)
-                keys[4] = null;
+                keys[3] = null;
             writer.save (image, "jpeg", keys, values);
         }
         else if (strcmp (type, "png") == 0)
         {
-            string[] keys = { "icc-profile", null };
-            string[] values = { icc_profile_data, null };
+            string[] keys = { "x-dpi", "y-dpi", "icc-profile", null };
+            string[] values = { "%d".printf (dpi), "%d".printf (dpi), icc_profile_data, null };
             if (icc_profile_data == null)
-                keys[0] = null;
+                keys[2] = null;
             writer.save (image, "png", keys, values);
         }
         else if (strcmp (type, "tiff") == 0)
         {
-            string[] keys = { "compression", "icc-profile", null };
-            string[] values = { "8" /* Deflate compression */, icc_profile_data, null };
+            string[] keys = { "x-dpi", "y-dpi", "compression", "icc-profile", null };
+            string[] values = { "%d".printf (dpi), "%d".printf (dpi), "8" /* Deflate compression */, icc_profile_data, null };
             if (icc_profile_data == null)
-                keys[1] = null;
+                keys[3] = null;
             writer.save (image, "tiff", keys, values);
         }
         else
-            ; // FIXME: Throw Error
+            throw new FileError.INVAL ("Unknown file type: %s".printf (type));
     }
 }
 
