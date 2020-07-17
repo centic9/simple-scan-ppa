@@ -1,11 +1,8 @@
-foreach size: [ '16x16', '22x22', '24x24', '32x32', '48x48', 'scalable' ]
-    suffix = 'png'
-    if size == 'scalable'
-        suffix = 'svg'
-    endif
-    install_data (join_paths ('icons', size , 'object-crop.' + suffix),
-                  install_dir: join_paths (icondir, 'hicolor', size, 'actions'))
-endforeach
+install_data (join_paths ('icons', 'hicolor', 'scalable', '@0@.svg'.format(app_id)),
+              install_dir: join_paths (datadir, 'icons', 'hicolor', 'scalable', 'apps'))
+
+install_data (join_paths ('icons', 'hicolor', 'symbolic', '@0@-symbolic.svg'.format(app_id)),
+              install_dir: join_paths (datadir, 'icons', 'hicolor', 'symbolic', 'apps'))
 
 install_data ('org.gnome.SimpleScan.gschema.xml',
               install_dir: join_paths (datadir, 'glib-2.0', 'schemas'))

@@ -11,13 +11,13 @@
 
 /* TODO: Could indicate the start of the next page immediately after the last page is received (i.e. before the sane_cancel()) */
 
-public class ScanDevice
+public class ScanDevice : Object
 {
     public string name;
     public string label;
 }
 
-public class ScanPageInfo
+public class ScanPageInfo : Object
 {
     /* Width, height in pixels */
     public int width;
@@ -36,7 +36,7 @@ public class ScanPageInfo
     public string device;
 }
 
-public class ScanLine
+public class ScanLine : Object
 {
     /* Line number */
     public int number;
@@ -73,7 +73,7 @@ public enum ScanType
     BATCH
 }
 
-public class ScanOptions
+public class ScanOptions : Object
 {
     public int dpi;
     public ScanMode scan_mode;
@@ -86,7 +86,7 @@ public class ScanOptions
     public int page_delay;
 }
 
-private class ScanJob
+private class ScanJob : Object
 {
     public int id;
     public string device;
@@ -208,7 +208,7 @@ private class NotifyGotLine : Notify
     }
 }
 
-public class Scanner
+public class Scanner : Object
 {
     /* Singleton object */
     private static Scanner scanner_object = null;
@@ -292,7 +292,7 @@ public class Scanner
         return false;
     }
 
-    private void notify (Notify notification)
+    private void notify_event (Notify notification)
     {
         notify_queue.push (notification);
         Idle.add (notify_idle_cb);
@@ -303,7 +303,7 @@ public class Scanner
         if ((scanning && !is_scanning) || (!scanning && is_scanning))
         {
             scanning = is_scanning;
-            notify (new NotifyScanningChanged ());
+            notify_event (new NotifyScanningChanged ());
         }
     }
 
@@ -382,7 +382,7 @@ public class Scanner
         else
             default_device = null;
 
-        notify (new NotifyUpdateDevices ((owned) devices));
+        notify_event (new NotifyUpdateDevices ((owned) devices));
     }
 
     private int scale_int (int source_min, int source_max, Sane.OptionDescriptor option, int value)
@@ -743,7 +743,7 @@ public class Scanner
 
     private static void authorization_cb (string resource, char[] username, char[] password)
     {
-        scanner_object.notify (new NotifyRequestAuthorization (resource));
+        scanner_object.notify_event (new NotifyRequestAuthorization (resource));
 
         var credentials = scanner_object.authorize_queue.pop ();
         for (var i = 0; credentials.username[i] != '\0' && i < Sane.MAX_USERNAME_LEN; i++)
@@ -783,7 +783,7 @@ public class Scanner
     {
         close_device ();
         state = ScanState.IDLE;
-        notify (new NotifyScanFailed (error_code, error_string));
+        notify_event (new NotifyScanFailed (error_code, error_string));
     }
 
     private bool handle_requests ()
@@ -868,7 +868,7 @@ public class Scanner
 
         if (status != Sane.Status.GOOD)
         {
-            warning ("Unable to get open device: %s", Sane.strstatus (status));
+            warning ("Unable to open device: %s", Sane.strstatus (status));
             fail_scan (status,
                        /* Error displayed when cannot connect to scanner */
                        _("Unable to connect to scanner"));
@@ -1039,6 +1039,30 @@ public class Scanner
                     set_bool_option (handle, option, index, job.type == ScanType.ADF_BOTH, null);
             }
 
+            /* Non-standard Epson GT-S50 ADF options */
+            option = get_option_by_name (handle, "adf-mode", out index);
+            if (option != null)
+            {
+                string[] adf_simplex_modes =
+                {
+                    "Simplex"
+                };
+                string[] adf_duplex_modes =
+                {
+                    "Duplex"
+                };
+                if (job.type == ScanType.ADF_BOTH)
+                    set_constrained_string_option (handle, option, index, adf_duplex_modes, null);
+                else
+                    set_constrained_string_option (handle, option, index, adf_simplex_modes, null);
+            }
+            option = get_option_by_name (handle, "adf-auto-scan", out index);
+            if (option != null)
+            {
+                if (option.type == Sane.ValueType.BOOL)
+                    set_bool_option (handle, option, index, true, null);
+            }
+
             /* Multi-page options */
             option = get_option_by_name (handle, "batch-scan", out index);
             if (option != null)
@@ -1203,7 +1227,7 @@ public class Scanner
         /* Trigger timeout to close */
         // TODO
 
-        notify (new NotifyDocumentDone ());
+        notify_event (new NotifyDocumentDone ());
         set_scanning (false);
     }
 
@@ -1211,7 +1235,7 @@ public class Scanner
     {
         Sane.Status status;
 
-        notify (new NotifyExpectPage ());
+        notify_event (new NotifyExpectPage ());
 
         status = Sane.start (handle);
         debug ("sane_start (page=%d, pass=%d) -> %s", page_number, pass_number, Sane.status_to_string (status));
@@ -1265,7 +1289,7 @@ public class Scanner
 
         if (page_number != notified_page)
         {
-            notify (new NotifyGotPageInfo (job.id, info));
+            notify_event (new NotifyGotPageInfo (job.id, info));
             notified_page = page_number;
         }
 
@@ -1282,7 +1306,7 @@ public class Scanner
     {
         var job = (ScanJob) job_queue.data;
 
-        notify (new NotifyPageDone (job.id));
+        notify_event (new NotifyPageDone (job.id));
 
         /* If multi-pass then scan another page */
         if (!parameters.last_frame)
@@ -1300,7 +1324,7 @@ public class Scanner
 
             page_number++;
             pass_number = 0;
-            notify (new NotifyPageDone (job.id));
+            notify_event (new NotifyPageDone (job.id));
             state = ScanState.START;
             return;
         }
@@ -1448,7 +1472,7 @@ public class Scanner
                 line.data_length = (line.width * 2 + 7) / 8;
             }
 
-            notify (new NotifyGotLine (job.id, line));
+            notify_event (new NotifyGotLine (job.id, line));
         }
     }
 

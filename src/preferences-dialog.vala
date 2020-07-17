@@ -58,15 +58,10 @@ private class PreferencesDialog : Gtk.Dialog
     private Gtk.Adjustment brightness_adjustment;
     [GtkChild]
     private Gtk.Adjustment contrast_adjustment;
-    [GtkChild]
-    private Gtk.Button preferences_close_button;
 
-    public PreferencesDialog (Settings settings, bool use_header_bar)
+    public PreferencesDialog (Settings settings)
     {
-        Object (use_header_bar: use_header_bar ? 1 : -1);
-
-        if (use_header_bar)
-            preferences_close_button.visible = false;
+        Object (use_header_bar: 1);
 
         this.settings = settings;
 
@@ -416,7 +411,7 @@ private class PreferencesDialog : Gtk.Dialog
     {
         if (page_delay >= 15000)
             page_delay_15s_button.active = true;
-        else if (page_delay >= 1000)
+        else if (page_delay >= 10000)
             page_delay_10s_button.active = true;
         else if (page_delay >= 7000)
             page_delay_7s_button.active = true;

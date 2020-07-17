@@ -23,7 +23,7 @@ public class SimpleScan : Gtk.Application
           /* Help string for command line --debug flag */
           N_("Print debugging messages"), null},
         { "fix-pdf", 0, 0, OptionArg.STRING, ref fix_pdf_filename,
-          N_("Fix PDF files generated with older versions of Simple Scan"), "FILENAME…"},
+          N_("Fix PDF files generated with older versions of this app"), "FILENAME…"},
         { null }
     };
     private static Timer log_timer;
@@ -105,7 +105,7 @@ public class SimpleScan : Gtk.Application
 
     private void update_scan_devices_cb (Scanner scanner, List<ScanDevice> devices)
     {
-        var devices_copy = devices.copy ();
+        var devices_copy = devices.copy_deep ((CopyFunc) Object.ref);
 
         /* If the default device is not detected add it to the list */
         if (default_device != null)
@@ -635,7 +635,7 @@ public class SimpleScan : Gtk.Application
         log_file = FileStream.open (path, "w");
         Log.set_default_handler (log_cb);
 
-        debug ("Starting Simple Scan %s, PID=%i", VERSION, Posix.getpid ());
+        debug ("Starting %s %s, PID=%i", args[0], VERSION, Posix.getpid ());
 
         Gtk.init (ref args);
 
