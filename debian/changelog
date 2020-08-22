@@ -1,26 +1,24 @@
-simple-scan (3.36.3-0ubuntu0.20.04.0) focal; urgency=medium
-
-  * New upstream release (LP: #1883819)
-
- -- Robert Ancell <robert.ancell@canonical.com>  Wed, 17 Jun 2020 15:46:35 +1200
-
-simple-scan (3.36.0-0ubuntu1) focal; urgency=medium
-
-  * New upstream release
-
- -- Robert Ancell <robert.ancell@canonical.com>  Tue, 10 Mar 2020 15:20:44 +1300
-
-simple-scan (3.35.91-0ubuntu1) focal; urgency=medium
-
-  * New upstream release
-
- -- Robert Ancell <robert.ancell@canonical.com>  Fri, 14 Feb 2020 09:21:53 +1300
-
-simple-scan (3.35.90-0ubuntu1) focal; urgency=medium
+simple-scan (3.36.4-1) unstable; urgency=medium
 
   * New upstream release.
 
- -- Robert Ancell <robert.ancell@canonical.com>  Mon, 10 Feb 2020 16:46:18 +1300
+ -- Jörg Frings-Fürst <debian@jff.email>  Sat, 22 Aug 2020 21:28:08 +0200
+
+simple-scan (3.36.2.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Migrate to debhelper 13:
+    - Change debhelper-compat version in debian/control to = 13.
+
+ -- Jörg Frings-Fürst <debian@jff.email>  Tue, 26 May 2020 20:45:02 +0200
+
+simple-scan (3.36.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Declare compliance with Debian Policy 4.5.0 (No changes needed).
+  * Refresh debian/copyright.
+
+ -- Jörg Frings-Fürst <debian@jff.email>  Mon, 13 Apr 2020 11:49:18 +0200
 
 simple-scan (3.34.2-1) unstable; urgency=medium
 
