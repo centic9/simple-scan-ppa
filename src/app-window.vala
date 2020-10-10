@@ -188,6 +188,7 @@ public class AppWindow : Gtk.ApplicationWindow
 
     public signal void start_scan (string? device, ScanOptions options);
     public signal void stop_scan ();
+    public signal void redetect ();
 
     public AppWindow ()
     {
@@ -224,7 +225,7 @@ public class AppWindow : Gtk.ApplicationWindow
                                             Gtk.ButtonsType.NONE,
                                             "%s", error_title);
         dialog.add_button (_("_Close"), 0);
-        dialog.format_secondary_text ("%s", error_text);
+        dialog.format_secondary_markup  ("%s", error_text);
         dialog.run ();
         dialog.destroy ();
     }
@@ -245,7 +246,7 @@ public class AppWindow : Gtk.ApplicationWindow
 
     private void update_scan_status ()
     {
-        scan_button.set_sensitive(false);
+        scan_button.sensitive = false;
         if (!have_devices)
         {
             status_primary_label.set_text (/* Label shown when searching for scanners */
@@ -255,12 +256,13 @@ public class AppWindow : Gtk.ApplicationWindow
         }
         else if (get_selected_device () != null)
         {
-            scan_button.set_sensitive(true);
+            scan_button.sensitive = true;
             status_primary_label.set_text (/* Label shown when detected a scanner */
                                            _("Ready to Scan"));
             status_secondary_label.set_text (get_selected_device_label ());
             status_secondary_label.visible = false;
             device_combo.visible = true;
+            device_combo.sensitive = true;
         }
         else if (this.missing_driver != null)
         {
@@ -449,7 +451,7 @@ public class AppWindow : Gtk.ApplicationWindow
         directory = settings.get_string ("save-directory");
 
         if (directory == null || directory == "")
-            directory = Environment.get_user_special_dir (UserDirectory.DOCUMENTS);
+            directory = GLib.Filename.to_uri(Environment.get_user_special_dir (UserDirectory.DOCUMENTS));
 
         var save_dialog = new Gtk.FileChooserNative (/* Save dialog: Dialog title */
                                                      _("Save As…"),
@@ -458,12 +460,15 @@ public class AppWindow : Gtk.ApplicationWindow
                                                      _("_Save"),
                                                      _("_Cancel"));
         save_dialog.local_only = false;
+
+        var save_format = settings.get_string ("save-format");
         if (book_uri != null)
             save_dialog.set_uri (book_uri);
         else {
-            save_dialog.set_current_folder (directory);
-            /* Default filename to use when saving document */
-            save_dialog.set_current_name (_("Scanned Document.pdf"));
+            save_dialog.set_current_folder_uri (directory);
+            /* Default filename to use when saving document. */
+            /* To that filename the extension will be added, eg. "Scanned Document.pdf" */
+            save_dialog.set_current_name (_("Scanned Document") + "." + mime_type_to_extension (save_format));
         }
 
         /* Filter to only show images by default */
@@ -489,31 +494,32 @@ public class AppWindow : Gtk.ApplicationWindow
         file_type_store.set (iter,
                              /* Save dialog: Label for saving in PDF format */
                              0, _("PDF (multi-page document)"),
-                             1, ".pdf",
+                             1, "application/pdf",
                              -1);
         file_type_store.append (out iter);
         file_type_store.set (iter,
                              /* Save dialog: Label for saving in JPEG format */
                              0, _("JPEG (compressed)"),
-                             1, ".jpg",
+                             1, "image/jpeg",
                              -1);
         file_type_store.append (out iter);
         file_type_store.set (iter,
                              /* Save dialog: Label for saving in PNG format */
                              0, _("PNG (lossless)"),
-                             1, ".png",
+                             1, "image/png",
                              -1);
 #if HAVE_WEBP
         file_type_store.append (out iter);
         file_type_store.set (iter,
                              /* Save dialog: Label for sabing in WEBP format */
                              0, _("WebP (compressed)"),
-                             1, ".webp",
+                             1, "image/webp",
                              -1);
 #endif
 
         var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
         box.visible = true;
+        box.spacing = 10;
         save_dialog.set_extra_widget (box);
 
         /* Label in save dialog beside combo box to choose file format (PDF, JPEG, PNG, WEBP) */
@@ -528,29 +534,47 @@ public class AppWindow : Gtk.ApplicationWindow
         file_type_combo.add_attribute (renderer, "text", 0);
         box.add (file_type_combo);
 
+        if (file_type_store.get_iter_first (out iter))
+        {
+            do
+            {
+                string mime_type;
+                file_type_store.get (iter, 1, out mime_type, -1);
+                if (mime_type == save_format)
+                    file_type_combo.set_active_iter (iter);
+            } while (file_type_store.iter_next (ref iter));
+        }
+
         /* Label in save dialog beside compression slider */
         var quality_label = new Gtk.Label (_("Compression:"));
         box.add (quality_label);
 
         var quality_adjustment = new Gtk.Adjustment (75, 0, 100, 1, 10, 0);
         var quality_scale = new Gtk.Scale (Gtk.Orientation.HORIZONTAL, quality_adjustment);
-        quality_scale.width_request = 200;
+        quality_scale.width_request = 250;
         quality_scale.draw_value = false;
-        quality_scale.add_mark (0, Gtk.PositionType.BOTTOM, null);
+        var minimum_size_label = "<small>%s</small>".printf (_("Minimum size"));
+        quality_scale.add_mark (quality_adjustment.lower, Gtk.PositionType.BOTTOM, minimum_size_label);
         quality_scale.add_mark (75, Gtk.PositionType.BOTTOM, null);
         quality_scale.add_mark (90, Gtk.PositionType.BOTTOM, null);
-        quality_scale.add_mark (100, Gtk.PositionType.BOTTOM, null);
+        var full_detail_label = "<small>%s</small>".printf (_("Full detail"));
+        quality_scale.add_mark (quality_adjustment.upper, Gtk.PositionType.BOTTOM, full_detail_label);
         quality_adjustment.value = settings.get_int ("jpeg-quality");
         quality_adjustment.value_changed.connect (() => { settings.set_int ("jpeg-quality", (int) quality_adjustment.value); });
         box.add (quality_scale);
 
-        file_type_combo.set_active (0);
+        /* Quality not applicable to PNG */
+        quality_scale.visible = quality_label.visible = (save_format != "image/png");
+
         file_type_combo.changed.connect (() =>
         {
-            var extension = "";
+            var mime_type = "";
             Gtk.TreeIter i;
             if (file_type_combo.get_active_iter (out i))
-                file_type_store.get (i, 1, out extension, -1);
+            {
+                file_type_store.get (i, 1, out mime_type, -1);
+                settings.set_string ("save-format", mime_type);
+            }
 
             var filename = save_dialog.get_current_name ();
 
@@ -558,11 +582,11 @@ public class AppWindow : Gtk.ApplicationWindow
             var extension_index = filename.last_index_of_char ('.');
             if (extension_index >= 0)
                 filename = filename.slice (0, extension_index);
-            filename = filename + extension;
+            filename = filename + "." + mime_type_to_extension (mime_type);
             save_dialog.set_current_name (filename);
 
             /* Quality not applicable to PNG */
-            quality_scale.visible = quality_label.visible = (extension != ".png");
+            quality_scale.visible = quality_label.visible = (mime_type != "image/png");
         });
 
         while (true)
@@ -574,25 +598,20 @@ public class AppWindow : Gtk.ApplicationWindow
                 return null;
             }
 
-            var extension = "";
+            var mime_type = "";
             Gtk.TreeIter i;
             if (file_type_combo.get_active_iter (out i))
-                file_type_store.get (i, 1, out extension, -1);
+                file_type_store.get (i, 1, out mime_type, -1);
 
             var uri = save_dialog.get_uri ();
 
             var extension_index = uri.last_index_of_char ('.');
             if (extension_index < 0)
-                uri += extension;
+                uri += "." + mime_type_to_extension (mime_type);
 
             /* Check the file(s) don't already exist */
             var files = new List<File> ();
-            var format = uri_to_format (uri);
-#if HAVE_WEBP
-            if (format == "jpeg" || format == "png" || format == "webp")
-#else
-            if (format == "jpeg" || format == "png")
-#endif
+            if (mime_type == "image/jpeg" || mime_type == "image/png" || mime_type == "image/webp")
             {
                 for (var j = 0; j < book.n_pages; j++)
                     files.append (make_indexed_file (uri, j, book.n_pages));
@@ -602,7 +621,8 @@ public class AppWindow : Gtk.ApplicationWindow
 
             if (check_overwrite (save_dialog.transient_for, files))
             {
-                settings.set_string ("save-directory", save_dialog.get_current_folder ());
+                var directory_uri = uri.substring (0, uri.last_index_of ("/") + 1);
+                settings.set_string ("save-directory", directory_uri);
                 save_dialog.destroy ();
                 return uri;
             }
@@ -633,19 +653,47 @@ public class AppWindow : Gtk.ApplicationWindow
         return true;
     }
 
-    private string uri_to_format (string uri)
+    private string? mime_type_to_extension (string mime_type)
     {
-        var uri_lower = uri.down ();
-        if (uri_lower.has_suffix (".pdf"))
+        if (mime_type == "application/pdf")
             return "pdf";
-        else if (uri_lower.has_suffix (".png"))
+        else if (mime_type == "image/jpeg")
+            return "jpg";
+        else if (mime_type == "image/png")
             return "png";
-#if HAVE_WEBP
-        else if (uri_lower.has_suffix (".webp"))
+        else if (mime_type == "image/webp")
             return "webp";
-#endif
         else
-            return "jpeg";
+            return null;
+    }
+
+    private string? extension_to_mime_type (string extension)
+    {
+        var extension_lower = extension.down ();
+        if (extension_lower == "pdf")
+            return "application/pdf";
+        else if (extension_lower == "jpg")
+            return "image/jpeg";
+        else if (extension_lower == "png")
+            return "image/png";
+        else if (extension_lower == "webp")
+            return "image/webp";
+        else
+            return null;
+    }
+
+    private string uri_to_mime_type (string uri)
+    {
+        var extension_index = uri.last_index_of_char ('.');
+        if (extension_index < 0)
+            return "image/jpeg";
+        var extension = uri.substring (extension_index + 1);
+
+        var mime_type = extension_to_mime_type (extension);
+        if (mime_type == null)
+            return "image/jpeg";
+
+        return mime_type;
     }
 
     private async bool save_document_async ()
@@ -658,7 +706,7 @@ public class AppWindow : Gtk.ApplicationWindow
 
         debug ("Saving to '%s'", uri);
 
-        var format = uri_to_format (uri);
+        var mime_type = uri_to_mime_type (uri);
 
         var cancellable = new Cancellable ();
         var progress_bar =  new CancellableProgressBar (_("Saving"), cancellable);
@@ -667,7 +715,7 @@ public class AppWindow : Gtk.ApplicationWindow
         save_button.sensitive = false;
         try
         {
-            yield book.save_async (format, settings.get_int ("jpeg-quality"), file, (fraction) =>
+            yield book.save_async (mime_type, settings.get_int ("jpeg-quality"), file, (fraction) =>
             {
                 progress_bar.set_fraction (fraction);
             }, cancellable);
@@ -748,6 +796,9 @@ public class AppWindow : Gtk.ApplicationWindow
             if (scanning)
                 stop_scan ();
 
+            have_devices = false;
+            /* Refresh list of devices to detect network scanners, and fix issues with disconnected scanners */
+            redetect ();
             clear_document ();
         });
     }
@@ -773,6 +824,7 @@ public class AppWindow : Gtk.ApplicationWindow
     {
         status_primary_label.set_text (/* Label shown when scan started */
                                        _("Contacting scanner…"));
+        device_combo.sensitive = false;
         start_scan (get_selected_device (), options);
     }
 
@@ -1428,11 +1480,21 @@ public class AppWindow : Gtk.ApplicationWindow
         try
         {
             var dir = DirUtils.make_tmp ("simple-scan-XXXXXX");
-            var type = document_hint == "text" ? "pdf" : "jpeg";
-            var file = File.new_for_path (Path.build_filename (dir, "scan." + type));
-            yield book.save_async (type, settings.get_int ("jpeg-quality"), file, null, null);
+            string mime_type, filename;
+            if (document_hint == "text")
+            {
+                mime_type = "application/pdf";
+                filename = "scan.pdf";
+            }
+            else
+            {
+                mime_type = "image/jpeg";
+                filename = "scan.jpg";
+            }
+            var file = File.new_for_path (Path.build_filename (dir, filename));
+            yield book.save_async (mime_type, settings.get_int ("jpeg-quality"), file, null, null);
             var command_line = "xdg-email";
-            if (type == "pdf")
+            if (mime_type == "application/pdf")
                 command_line += " --attach %s".printf (file.get_path ());
             else
             {
@@ -1574,22 +1636,43 @@ public class AppWindow : Gtk.ApplicationWindow
             /* Instructions on how to install Brother scanner drivers */
             instructions = _("Drivers for this are available on the <a href=\"http://support.brother.com\">Brother website</a>.");
             break;
+        case "pixma":
+            /* Message to indicate a Canon Pixma scanner has been detected */
+            message = _("You appear to have a Canon scanner, which is supported by the <a href=\"http://www.sane-project.org/man/sane-pixma.5.html\">Pixma SANE backend</a>.");
+            /* Instructions on how to resolve issue with SANE scanner drivers */
+            instructions = _("Please check if your <a href=\"http://www.sane-project.org/sane-supported-devices.html\">scanner is supported by SANE</a>, otherwise report the issue to the <a href=\"https://alioth-lists.debian.net/cgi-bin/mailman/listinfo/sane-devel\">SANE mailing list</a>.");
+            break;
         case "samsung":
             /* Message to indicate a Samsung scanner has been detected */
             message = _("You appear to have a Samsung scanner.");
-            /* Instructions on how to install Samsung scanner drivers */
-            instructions = _("Drivers for this are available on the <a href=\"http://samsung.com/support\">Samsung website</a>.");
+            /* Instructions on how to install Samsung scanner drivers.
+               Because HP acquired Samsung's global printing business in 2017, the support is made on HP site. */
+            instructions = _("Drivers for this are available on the <a href=\"https://support.hp.com\">HP website</a> (HP acquired Samsung's printing business).");
             break;
         case "hpaio":
+        case "smfp":
             /* Message to indicate a HP scanner has been detected */
             message = _("You appear to have an HP scanner.");
-            packages_to_install = { "libsane-hpaio" };
+            if (missing_driver == "hpaio")
+                packages_to_install = { "libsane-hpaio" };
+            else
+                /* Instructions on how to install HP scanner drivers.
+                   smfp is rebranded and slightly modified Samsung devices,
+                   for example: HP Laser MFP 135a is rebranded Samsung Xpress SL-M2070.
+                   It require custom drivers, not available in hpaio package */
+                instructions = _("Drivers for this are available on the <a href=\"https://support.hp.com\">HP website</a>.");
             break;
         case "epkowa":
             /* Message to indicate an Epson scanner has been detected */
             message = _("You appear to have an Epson scanner.");
             /* Instructions on how to install Epson scanner drivers */
             instructions = _("Drivers for this are available on the <a href=\"http://support.epson.com\">Epson website</a>.");
+            break;
+        case "lexmark_nscan":
+            /* Message to indicate an Lexmark scanner has been detected */
+            message = _("You appear to have an Lexmark scanner.");
+            /* Instructions on how to install Lexmark scanner drivers */
+            instructions = _("Drivers for this are available on the <a href=\"http://support.lexmark.com\">Lexmark website</a>.");
             break;
         }
         var dialog = new Gtk.Dialog.with_buttons (/* Title of dialog giving instructions on how to install drivers */
@@ -1601,6 +1684,7 @@ public class AppWindow : Gtk.ApplicationWindow
         label.visible = true;
         label.xalign = 0f;
         label.vexpand = true;
+        label.use_markup = true;
         dialog.get_content_area ().add (label);
 
         var instructions_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 6);
@@ -1780,7 +1864,7 @@ public class AppWindow : Gtk.ApplicationWindow
         app.set_accels_for_action ("app.print", { "<Ctrl>P" });
         app.set_accels_for_action ("app.help", { "F1" });
         app.set_accels_for_action ("app.quit", { "<Ctrl>Q" });
-        app.set_accels_for_action ("win.show-help-overlay", { "<Ctrl>F1" });
+        app.set_accels_for_action ("win.show-help-overlay", { "<Ctrl>question" });
 
         var gear_menu = new Menu ();
         var section = new Menu ();
