@@ -54,6 +54,7 @@ public class SimpleScan : Gtk.Application
         book = app.book;
         app.start_scan.connect (scan_cb);
         app.stop_scan.connect (cancel_cb);
+        app.redetect.connect (redetect_cb);
 
         scanner = Scanner.get_instance ();
         scanner.update_devices.connect (update_scan_devices_cb);
@@ -542,12 +543,227 @@ public class SimpleScan : Gtk.Application
       0x04f960a9, /* ADS-1600W */
     };
 
+    /* Taken from backend/pixma/pixma_mp150.c pixma_mp730.c pixma_mp750.c pixma_mp800.c in the pixma SANE backend repository */
+    /* Canon Pixma IDs extracted using the following Python script
+      import sys
+      for f in sys.argv:
+        for l in open(f, "r").readlines():
+          tokens=l.split ()
+          if len (tokens) >= 3 and tokens[0].startswith("#define") and tokens[1].endswith("_PID") and tokens[2].startswith("0x") and not tokens[2].endswith("ffff"):
+            print ( "0x04a9" + tokens[2][2:] + ", /* " +  tokens[1][:-4] + " * /")
+    */
+    private const uint32 pixma_devices[] = {
+      0x04a91709, /* MP150 */
+      0x04a9170a, /* MP170 */
+      0x04a9170b, /* MP450 */
+      0x04a9170c, /* MP500 */
+      0x04a91712, /* MP530 */
+      0x04a91714, /* MP160 */
+      0x04a91715, /* MP180 */
+      0x04a91716, /* MP460 */
+      0x04a91717, /* MP510 */
+      0x04a91718, /* MP600 */
+      0x04a91719, /* MP600R */
+      0x04a9172b, /* MP140 */
+      0x04a9171c, /* MX7600 */
+      0x04a91721, /* MP210 */
+      0x04a91722, /* MP220 */
+      0x04a91723, /* MP470 */
+      0x04a91724, /* MP520 */
+      0x04a91725, /* MP610 */
+      0x04a91727, /* MX300 */
+      0x04a91728, /* MX310 */
+      0x04a91729, /* MX700 */
+      0x04a9172c, /* MX850 */
+      0x04a9172e, /* MP630 */
+      0x04a9172f, /* MP620 */
+      0x04a91730, /* MP540 */
+      0x04a91731, /* MP480 */
+      0x04a91732, /* MP240 */
+      0x04a91733, /* MP260 */
+      0x04a91734, /* MP190 */
+      0x04a91735, /* MX860 */
+      0x04a91736, /* MX320 */
+      0x04a91737, /* MX330 */
+      0x04a9173a, /* MP250 */
+      0x04a9173b, /* MP270 */
+      0x04a9173c, /* MP490 */
+      0x04a9173d, /* MP550 */
+      0x04a9173e, /* MP560 */
+      0x04a9173f, /* MP640 */
+      0x04a91741, /* MX340 */
+      0x04a91742, /* MX350 */
+      0x04a91743, /* MX870 */
+      0x04a91746, /* MP280 */
+      0x04a91747, /* MP495 */
+      0x04a91748, /* MG5100 */
+      0x04a91749, /* MG5200 */
+      0x04a9174a, /* MG6100 */
+      0x04a9174d, /* MX360 */
+      0x04a9174e, /* MX410 */
+      0x04a9174f, /* MX420 */
+      0x04a91750, /* MX880 */
+      0x04a91751, /* MG2100 */
+      0x04a91752, /* MG3100 */
+      0x04a91753, /* MG4100 */
+      0x04a91754, /* MG5300 */
+      0x04a91755, /* MG6200 */
+      0x04a91757, /* MP493 */
+      0x04a91758, /* E500 */
+      0x04a91759, /* MX370 */
+      0x04a9175B, /* MX430 */
+      0x04a9175C, /* MX510 */
+      0x04a9175D, /* MX710 */
+      0x04a9175E, /* MX890 */
+      0x04a9175A, /* E600 */
+      0x04a91763, /* MG4200 */
+      0x04a9175F, /* MP230 */
+      0x04a91765, /* MG6300 */
+      0x04a91760, /* MG2200 */
+      0x04a91761, /* E510 */
+      0x04a91762, /* MG3200 */
+      0x04a91764, /* MG5400 */
+      0x04a91766, /* MX390 */
+      0x04a91767, /* E610 */
+      0x04a91768, /* MX450 */
+      0x04a91769, /* MX520 */
+      0x04a9176a, /* MX720 */
+      0x04a9176b, /* MX920 */
+      0x04a9176c, /* MG2400 */
+      0x04a9176d, /* MG2500 */
+      0x04a9176e, /* MG3500 */
+      0x04a9176f, /* MG6500 */
+      0x04a91770, /* MG6400 */
+      0x04a91771, /* MG5500 */
+      0x04a91772, /* MG7100 */
+      0x04a91774, /* MX470 */
+      0x04a91775, /* MX530 */
+      0x04a91776, /* MB5000 */
+      0x04a91777, /* MB5300 */
+      0x04a91778, /* MB2000 */
+      0x04a91779, /* MB2300 */
+      0x04a9177a, /* E400 */
+      0x04a9177b, /* E560 */
+      0x04a9177c, /* MG7500 */
+      0x04a9177e, /* MG6600 */
+      0x04a9177f, /* MG5600 */
+      0x04a91780, /* MG2900 */
+      0x04a91788, /* E460 */
+      0x04a91787, /* MX490 */
+      0x04a91789, /* E480 */
+      0x04a9178a, /* MG3600 */
+      0x04a9178b, /* MG7700 */
+      0x04a9178c, /* MG6900 */
+      0x04a9178d, /* MG6800 */
+      0x04a9178e, /* MG5700 */
+      0x04a91792, /* MB2700 */
+      0x04a91793, /* MB2100 */
+      0x04a91794, /* G3000 */
+      0x04a91795, /* G2000 */
+      0x04a9179f, /* TS9000 */
+      0x04a91800, /* TS8000 */
+      0x04a91801, /* TS6000 */
+      0x04a91802, /* TS5000 */
+      0x04a9180b, /* MG3000 */
+      0x04a9180c, /* E470 */
+      0x04a9181e, /* E410 */
+      0x04a9181d, /* G4000 */
+      0x04a91822, /* TS6100 */
+      0x04a91825, /* TS5100 */
+      0x04a91827, /* TS3100 */
+      0x04a91828, /* E3100 */
+      0x04a9178f, /* MB5400 */
+      0x04a91790, /* MB5100 */
+      0x04a91820, /* TS9100 */
+      0x04a91823, /* TR8500 */
+      0x04a91824, /* TR7500 */
+      0x04a9185c, /* TS9500 */
+      0x04a91912, /* LIDE400 */
+      0x04a91913, /* LIDE300 */
+      0x04a91821, /* TS8100 */
+      0x04a9183a, /* G2010 */
+      0x04a9183b, /* G3010 */
+      0x04a9183d, /* G4010 */
+      0x04a9183e, /* TS9180 */
+      0x04a9183f, /* TS8180 */
+      0x04a91840, /* TS6180 */
+      0x04a91841, /* TR8580 */
+      0x04a91842, /* TS8130 */
+      0x04a91843, /* TS6130 */
+      0x04a91844, /* TR8530 */
+      0x04a91845, /* TR7530 */
+      0x04a91846, /* XK50 */
+      0x04a91847, /* XK70 */
+      0x04a91854, /* TR4500 */
+      0x04a91855, /* E4200 */
+      0x04a91856, /* TS6200 */
+      0x04a91857, /* TS6280 */
+      0x04a91858, /* TS6230 */
+      0x04a91859, /* TS8200 */
+      0x04a9185a, /* TS8280 */
+      0x04a9185b, /* TS8230 */
+      0x04a9185d, /* TS9580 */
+      0x04a9185e, /* TR9530 */
+      0x04a91863, /* G7000 */
+      0x04a91865, /* G6000 */
+      0x04a91866, /* G6080 */
+      0x04a91869, /* GM4000 */
+      0x04a91873, /* XK80 */
+      0x04a9188b, /* TS5300 */
+      0x04a9188c, /* TS5380 */
+      0x04a9188d, /* TS6300 */
+      0x04a9188e, /* TS6380 */
+      0x04a9188f, /* TS7330 */
+      0x04a91890, /* TS8300 */
+      0x04a91891, /* TS8380 */
+      0x04a91892, /* TS8330 */
+      0x04a91893, /* XK60 */
+      0x04a91894, /* TS6330 */
+      0x04a918a2, /* TS3300 */
+      0x04a918a3, /* E3300 */
+      0x04a9261f, /* MP10 */
+      0x04a9262f, /* MP730 */
+      0x04a92630, /* MP700 */
+      0x04a92635, /* MP5 */
+      0x04a9263c, /* MP360 */
+      0x04a9263d, /* MP370 */
+      0x04a9263e, /* MP390 */
+      0x04a9263f, /* MP375R */
+      0x04a9264c, /* MP740 */
+      0x04a9264d, /* MP710 */
+      0x04a9265d, /* MF5730 */
+      0x04a9265e, /* MF5750 */
+      0x04a9265f, /* MF5770 */
+      0x04a92660, /* MF3110 */
+      0x04a926e6, /* IR1020 */
+      0x04a91706, /* MP750 */
+      0x04a91708, /* MP760 */
+      0x04a91707, /* MP780 */
+      0x04a9170d, /* MP800 */
+      0x04a9170e, /* MP800R */
+      0x04a91713, /* MP830 */
+      0x04a9171a, /* MP810 */
+      0x04a9171b, /* MP960 */
+      0x04a91726, /* MP970 */
+      0x04a91901, /* CS8800F */
+      0x04a9172d, /* MP980 */
+      0x04a91740, /* MP990 */
+      0x04a91908, /* CS9000F */
+      0x04a9174b, /* MG8100 */
+      0x04a91756, /* MG8200 */
+      0x04a9190d, /* CS9000F_MII */
+    };
+
     /* Taken from uld/noarch/oem.conf in the Samsung SANE driver */
     private const uint32 samsung_devices[] = { 0x04e83425, 0x04e8341c, 0x04e8342a, 0x04e8343d, 0x04e83456, 0x04e8345a, 0x04e83427, 0x04e8343a, 0x04e83428, 0x04e8343b, 0x04e83455, 0x04e83421, 0x04e83439, 0x04e83444, 0x04e8343f, 0x04e8344e, 0x04e83431, 0x04e8345c, 0x04e8344d, 0x04e83462, 0x04e83464, 0x04e83461, 0x04e83460, 0x04e8340e, 0x04e83435,
                                                0x04e8340f, 0x04e83441, 0x04e8344f, 0x04e83413, 0x04e8341b, 0x04e8342e, 0x04e83426, 0x04e8342b, 0x04e83433, 0x04e83440, 0x04e83434, 0x04e8345b, 0x04e83457, 0x04e8341f, 0x04e83453, 0x04e8344b, 0x04e83409, 0x04e83412, 0x04e83419, 0x04e8342c, 0x04e8343c, 0x04e83432, 0x04e8342d, 0x04e83430, 0x04e8342f,
                                                0x04e83446, 0x04e8341a, 0x04e83437, 0x04e83442, 0x04e83466, 0x04e8340d, 0x04e8341d, 0x04e83420, 0x04e83429, 0x04e83443, 0x04e83438, 0x04e8344c, 0x04e8345d, 0x04e83463, 0x04e83465, 0x04e83450, 0x04e83468, 0x04e83469, 0x04e83467, 0x04e8346b, 0x04e8346a, 0x04e8346e, 0x04e83471, 0x04e83472, 0x04e8347d,
                                                0x04e8347c, 0x04e8347e, 0x04e83481, 0x04e83482, 0x04e83331, 0x04e83332, 0x04e83483, 0x04e83484, 0x04e83485, 0x04e83478, 0x04e83325, 0x04e83327, 0x04e8346f, 0x04e83477, 0x04e83324, 0x04e83326, 0x04e83486, 0x04e83487, 0x04e83489
     };
+
+    /* Taken from uld/noarch/oem.conf in the HP/Samsung SANE driver
+       These devices are rebranded Samsung Multifunction Printers. */
+    private const uint32 smfp_devices[] = { 0x03F0AA2A, 0x03F0CE2A, 0x03F0C02A, 0x03F0EB2A, 0x03F0F22A };
 
     /* Taken from /usr/share/hplip/data/models/models.dat in the HPAIO driver */
     private const uint32 hpaio_devices[] = {
@@ -1236,6 +1452,68 @@ public class SimpleScan : Gtk.Application
     /* Taken from epkowa.desc from iscan-data package for Epson driver */
     private const uint32 epkowa_devices[] = { 0x04b80101, 0x04b80102, 0x04b80103, 0x04b80104, 0x04b80105, 0x04b80106, 0x04b80107, 0x04b80108, 0x04b80109, 0x04b8010a, 0x04b8010b, 0x04b8010c, 0x04b8010d, 0x04b8010e, 0x04b8010f, 0x04b80110, 0x04b80112, 0x04b80114, 0x04b80116, 0x04b80118, 0x04b80119, 0x04b8011a, 0x04b8011b, 0x04b8011c, 0x04b8011d, 0x04b8011e, 0x04b8011f, 0x04b80120, 0x04b80121, 0x04b80122, 0x04b80126, 0x04b80128, 0x04b80129, 0x04b8012a, 0x04b8012b, 0x04b8012c, 0x04b8012d, 0x04b8012e, 0x04b8012f, 0x04b80130, 0x04b80131, 0x04b80133, 0x04b80135, 0x04b80136, 0x04b80137, 0x04b80138, 0x04b8013a, 0x04b8013b, 0x04b8013c, 0x04b8013d, 0x04b80142, 0x04b80143, 0x04b80144, 0x04b80147, 0x04b8014a, 0x04b8014b, 0x04b80151, 0x04b80153, 0x04b80801, 0x04b80802, 0x04b80805, 0x04b80806, 0x04b80807, 0x04b80808, 0x04b8080a, 0x04b8080c, 0x04b8080d, 0x04b8080e, 0x04b8080f, 0x04b80810, 0x04b80811, 0x04b80813, 0x04b80814, 0x04b80815, 0x04b80817, 0x04b80818, 0x04b80819, 0x04b8081a, 0x04b8081c, 0x04b8081d, 0x04b8081f, 0x04b80820, 0x04b80821, 0x04b80827, 0x04b80828, 0x04b80829, 0x04b8082a, 0x04b8082b, 0x04b8082e, 0x04b8082f, 0x04b80830, 0x04b80831, 0x04b80833, 0x04b80834, 0x04b80835, 0x04b80836, 0x04b80837, 0x04b80838, 0x04b80839, 0x04b8083a, 0x04b8083c, 0x04b8083f, 0x04b80841, 0x04b80843, 0x04b80844, 0x04b80846, 0x04b80847, 0x04b80848, 0x04b80849, 0x04b8084a, 0x04b8084c, 0x04b8084d, 0x04b8084f, 0x04b80850, 0x04b80851, 0x04b80852, 0x04b80853, 0x04b80854, 0x04b80855, 0x04b80856, 0x04b8085c, 0x04b8085d, 0x04b8085e, 0x04b8085f, 0x04b80860, 0x04b80861, 0x04b80862, 0x04b80863, 0x04b80864, 0x04b80865, 0x04b80866, 0x04b80869, 0x04b8086a, 0x04b80870, 0x04b80871, 0x04b80872, 0x04b80873, 0x04b80878, 0x04b80879, 0x04b8087b, 0x04b8087c, 0x04b8087d, 0x04b8087e, 0x04b8087f, 0x04b80880, 0x04b80881, 0x04b80883, 0x04b80884, 0x04b80885, 0x04b8088f, 0x04b80890, 0x04b80891, 0x04b80892, 0x04b80893, 0x04b80894, 0x04b80895, 0x04b80896, 0x04b80897, 0x04b80898, 0x04b80899, 0x04b8089a, 0x04b8089b, 0x04b8089c, 0x04b8089d, 0x04b8089e, 0x04b8089f, 0x04b808a0, 0x04b808a1, 0x04b808a5, 0x04b808a6, 0x04b808a8, 0x04b808a9, 0x04b808aa, 0x04b808ab, 0x04b808ac, 0x04b808ad, 0x04b808ae, 0x04b808af, 0x04b808b0, 0x04b808b3, 0x04b808b4, 0x04b808b5, 0x04b808b6, 0x04b808b7, 0x04b808b8, 0x04b808b9, 0x04b808bd, 0x04b808be, 0x04b808bf, 0x04b808c0, 0x04b808c1, 0x04b808c3, 0x04b808c4, 0x04b808c5, 0x04b808c6, 0x04b808c7, 0x04b808c8, 0x04b808c9, 0x04b808ca, 0x04b808cd, 0x04b808d0 };
 
+
+    /* Taken from /usr/local/lexmark/unix_scan_drivers/etc/lexmark_nscan.conf */
+    /* Lexmark IDs extracted using command:
+     * grep -r "usb .* /usr" --no-filename --only-matching | sed 's/usb //' | sed 's/ 0x//' | sed 's/ \/usr/,/'
+     */
+    private const uint32 lexmark_nscan_devices[] = {
+    0x043d0279,
+    0x043d027a,
+    0x043d01D6,
+    0x043d01D7,
+    0x043d01D8,
+    0x043d01DC,
+    0x043d01DE,
+    0x043d01E0,
+    0x043d01FA,
+    0x043d01FB,
+    0x043d01FC,
+    0x043d01FD,
+    0x043d01FE,
+    0x043d01FF,
+    0x043d01F4,
+    0x043d0120,
+    0x043d0121,
+    0x043d0128,
+    0x043d014F,
+    0x043d0149,
+    0x043d0152,
+    0x043d0168,
+    0x043d0169,
+    0x043d016A,
+    0x043d012D,
+    0x043d01C4,
+    0x043d01C5,
+    0x043d01C6,
+    0x043d01CF,
+    0x043d01D0,
+    0x043d01D1,
+    0x043d01DB,
+    0x043d01ED,
+    0x043d01F1,
+    0x043d01F5,
+    0x043d0222,
+    0x043d0223,
+    0x043d0227,
+    0x043d0228,
+    0x043d022A,
+    0x043d022B,
+    0x043d022F,
+    0x043d0230,
+    0x043d0231,
+    0x043d0234,
+    0x043d0235,
+    0x043d0244,
+    0x043d0245,
+    0x043d0246,
+    0x043d0247,
+    0x043d0248,
+    0x043d024A,
+    0x043d024E,
+    0x043d024F
+    };
+
     /* Brother IDs extracted using the following Python
      *
      *  import sys
@@ -1273,9 +1551,12 @@ public class SimpleScan : Gtk.Application
         add_devices (driver_map, brscan2_devices, "brscan2");
         add_devices (driver_map, brscan3_devices, "brscan3");
         add_devices (driver_map, brscan4_devices, "brscan4");
+        add_devices (driver_map, pixma_devices, "pixma");
         add_devices (driver_map, samsung_devices, "samsung");
+        add_devices (driver_map, smfp_devices, "smfp");
         add_devices (driver_map, hpaio_devices, "hpaio");
         add_devices (driver_map, epkowa_devices, "epkowa");
+        add_devices (driver_map, lexmark_nscan_devices, "lexmark_nscan");
         var devices = usb_context.get_devices ();
         for (var i = 0; i < devices.length; i++)
         {
@@ -1547,6 +1828,12 @@ public class SimpleScan : Gtk.Application
         scanner.cancel ();
     }
 
+    private void redetect_cb (AppWindow ui)
+    {
+        scanner.redetect ();
+    }
+
+
     private static void log_cb (string? log_domain, LogLevelFlags log_level, string message)
     {
         string prefix;
@@ -1695,7 +1982,7 @@ public class SimpleScan : Gtk.Application
             }
             catch (Error e)
             {
-                stderr.printf ("Error fixing PDF file: %s", e.message);
+                stderr.printf ("Error fixing PDF file: %s\n", e.message);
                 return Posix.EXIT_FAILURE;
             }
             return Posix.EXIT_SUCCESS;
@@ -1715,6 +2002,11 @@ public class SimpleScan : Gtk.Application
         DirUtils.create_with_parents (path, 0700);
         path = Path.build_filename (Environment.get_user_cache_dir (), "simple-scan", "simple-scan.log", null);
         log_file = FileStream.open (path, "w");
+        if (log_file == null )
+        {
+            stderr.printf ("Error: Unable to open %s file for writing\n", path);
+            return Posix.EXIT_FAILURE;
+        }
         Log.set_default_handler (log_cb);
 
         debug ("Starting %s %s, PID=%i", args[0], VERSION, Posix.getpid ());
