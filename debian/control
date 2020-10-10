@@ -5,7 +5,7 @@ Maintainer: Jörg Frings-Fürst <debian@jff.email>
 Standards-Version: 4.5.0
 Rules-Requires-Root: no
 Build-Depends:
- debhelper-compat (= 13),
+ debhelper (>= 12),
  gettext,
  gnome-pkg-tools,
  itstool,
