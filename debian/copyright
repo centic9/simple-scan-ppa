@@ -5,7 +5,7 @@ Source: https://gitlab.gnome.org/GNOME/simple-scan
 
 Files: *
 Copyright: 2009-2018 Canonical Ltd
-           2017-2020 the simple-scan authors
+           2017-2021 the simple-scan authors
 License: GPL-3+
 
 Files: src/screensaver.vala
@@ -22,7 +22,7 @@ License: GPL-3+
 Files: debian/*
 Copyright: 2009-2012 Alessio Treglia <alessio@debian.org>
            2009      Robert Ancell <robert.ancell@canonical.com>
-           2014-2020 Jörg Frings-Fürst <debian@jff.email>
+           2014-2021 Jörg Frings-Fürst <debian@jff.email>
 License: GPL-3+
 
 License: GPL-3+

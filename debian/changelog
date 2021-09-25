@@ -1,3 +1,29 @@
+simple-scan (40.5-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Jörg Frings-Fürst <debian@jff.email>  Sat, 25 Sep 2021 08:03:51 +0200
+
+simple-scan (40.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Declare compliance with Debian Policy 4.6.0.0 (No changes needed).
+  * debian/watch:
+    - Fix syntax
+  * debian/control:
+    - Add Build-Depends cmake and libhandy-1-dev.
+  * debian/copyright:
+    - Refresh for new upstream release.
+    - Add year 2021 to debian/*.
+
+ -- Jörg Frings-Fürst <debian@jff.email>  Sat, 21 Aug 2021 18:42:54 +0200
+
+simple-scan (3.38.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Jörg Frings-Fürst <debian@jff.email>  Sat, 17 Oct 2020 13:05:43 +0200
+
 simple-scan (3.36.4-1) unstable; urgency=medium
 
   * New upstream release.

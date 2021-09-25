@@ -10,52 +10,50 @@
  * license.
  */
 
-[GtkTemplate (ui = "/org/gnome/SimpleScan/preferences-dialog.ui")]
-private class PreferencesDialog : Gtk.Dialog
+[GtkTemplate (ui = "/org/gnome/SimpleScan/ui/preferences-dialog.ui")]
+private class PreferencesDialog : Hdy.PreferencesWindow
 {
     private Settings settings;
 
     [GtkChild]
-    private Gtk.ComboBox text_dpi_combo;
+    private unowned Gtk.ComboBox text_dpi_combo;
     [GtkChild]
-    private Gtk.ComboBox photo_dpi_combo;
+    private unowned Gtk.ComboBox photo_dpi_combo;
     [GtkChild]
-    private Gtk.ComboBox paper_size_combo;
+    private unowned Gtk.ComboBox paper_size_combo;
     [GtkChild]
-    private Gtk.Scale brightness_scale;
+    private unowned Gtk.Scale brightness_scale;
     [GtkChild]
-    private Gtk.Scale contrast_scale;
+    private unowned Gtk.Scale contrast_scale;
     [GtkChild]
-    private Gtk.RadioButton page_delay_3s_button;
+    private unowned Gtk.RadioButton page_delay_0s_button;
     [GtkChild]
-    private Gtk.RadioButton page_delay_5s_button;
+    private unowned Gtk.RadioButton page_delay_3s_button;
     [GtkChild]
-    private Gtk.RadioButton page_delay_7s_button;
+    private unowned Gtk.RadioButton page_delay_6s_button;
     [GtkChild]
-    private Gtk.RadioButton page_delay_10s_button;
+    private unowned Gtk.RadioButton page_delay_10s_button;
     [GtkChild]
-    private Gtk.RadioButton page_delay_15s_button;
+    private unowned Gtk.RadioButton page_delay_15s_button;
     [GtkChild]
-    private Gtk.ListStore text_dpi_model;
+    private unowned Gtk.ListStore text_dpi_model;
     [GtkChild]
-    private Gtk.ListStore photo_dpi_model;
+    private unowned Gtk.ListStore photo_dpi_model;
     [GtkChild]
-    private Gtk.RadioButton front_side_button;
+    private unowned Gtk.RadioButton front_side_button;
     [GtkChild]
-    private Gtk.RadioButton back_side_button;
+    private unowned Gtk.RadioButton back_side_button;
     [GtkChild]
-    private Gtk.RadioButton both_side_button;
+    private unowned Gtk.RadioButton both_side_button;
     [GtkChild]
-    private Gtk.ListStore paper_size_model;
+    private unowned Gtk.ListStore paper_size_model;
     [GtkChild]
-    private Gtk.Adjustment brightness_adjustment;
+    private unowned Gtk.Adjustment brightness_adjustment;
     [GtkChild]
-    private Gtk.Adjustment contrast_adjustment;
+    private unowned Gtk.Adjustment contrast_adjustment;
 
     public PreferencesDialog (Settings settings)
     {
-        Object (use_header_bar: 1);
-
         this.settings = settings;
 
         Gtk.TreeIter iter;
@@ -89,10 +87,10 @@ private class PreferencesDialog : Gtk.Dialog
         set_dpi_combo (photo_dpi_combo, DEFAULT_PHOTO_DPI, dpi);
         photo_dpi_combo.changed.connect (() => { settings.set_int ("photo-dpi", get_photo_dpi ()); });
 
-        set_page_side ((ScanType) settings.get_enum ("page-side"));
-        front_side_button.toggled.connect ((button) => { if (button.active) settings.set_enum ("page-side", ScanType.ADF_FRONT); });
-        back_side_button.toggled.connect ((button) => { if (button.active) settings.set_enum ("page-side", ScanType.ADF_BACK); });
-        both_side_button.toggled.connect ((button) => { if (button.active) settings.set_enum ("page-side", ScanType.ADF_BOTH); });
+        set_page_side ((ScanSide) settings.get_enum ("page-side"));
+        front_side_button.toggled.connect ((button) => { if (button.active) settings.set_enum ("page-side", ScanSide.FRONT); });
+        back_side_button.toggled.connect ((button) => { if (button.active) settings.set_enum ("page-side", ScanSide.BACK); });
+        both_side_button.toggled.connect ((button) => { if (button.active) settings.set_enum ("page-side", ScanSide.BOTH); });
 
         var renderer = new Gtk.CellRendererText ();
         paper_size_combo.pack_start (renderer, true);
@@ -130,38 +128,38 @@ private class PreferencesDialog : Gtk.Dialog
         });
 
         set_page_delay (settings.get_int ("page-delay"));
+        page_delay_0s_button.toggled.connect ((button) => { if (button.active) settings.set_int ("page-delay", 0); });
         page_delay_3s_button.toggled.connect ((button) => { if (button.active) settings.set_int ("page-delay", 3000); });
-        page_delay_5s_button.toggled.connect ((button) => { if (button.active) settings.set_int ("page-delay", 5000); });
-        page_delay_7s_button.toggled.connect ((button) => { if (button.active) settings.set_int ("page-delay", 7000); });
+        page_delay_6s_button.toggled.connect ((button) => { if (button.active) settings.set_int ("page-delay", 6000); });
         page_delay_10s_button.toggled.connect ((button) => { if (button.active) settings.set_int ("page-delay", 10000); });
         page_delay_15s_button.toggled.connect ((button) => { if (button.active) settings.set_int ("page-delay", 15000); });
     }
 
-    private void set_page_side (ScanType page_side)
+    private void set_page_side (ScanSide page_side)
     {
         switch (page_side)
         {
-        case ScanType.ADF_FRONT:
+        case ScanSide.FRONT:
             front_side_button.active = true;
             break;
-        case ScanType.ADF_BACK:
+        case ScanSide.BACK:
             back_side_button.active = true;
             break;
         default:
-        case ScanType.ADF_BOTH:
+        case ScanSide.BOTH:
             both_side_button.active = true;
             break;
         }
     }
 
-    public ScanType get_page_side ()
+    public ScanSide get_page_side ()
     {
         if (front_side_button.active)
-            return ScanType.ADF_FRONT;
+            return ScanSide.FRONT;
         else if (back_side_button.active)
-            return ScanType.ADF_BACK;
+            return ScanSide.BACK;
         else
-            return ScanType.ADF_BOTH;
+            return ScanSide.BOTH;
     }
 
     public void set_paper_size (int width, int height)
@@ -247,12 +245,12 @@ private class PreferencesDialog : Gtk.Dialog
             return 15000;
         else if (page_delay_10s_button.active)
             return 10000;
-        else if (page_delay_7s_button.active)
-            return 7000;
-        else if (page_delay_5s_button.active)
-            return 5000;
-        else
+        else if (page_delay_6s_button.active)
+            return 6000;
+        else if (page_delay_3s_button.active)
             return 3000;
+        else
+            return 0;
     }
 
     public void set_page_delay (int page_delay)
@@ -261,12 +259,12 @@ private class PreferencesDialog : Gtk.Dialog
             page_delay_15s_button.active = true;
         else if (page_delay >= 10000)
             page_delay_10s_button.active = true;
-        else if (page_delay >= 7000)
-            page_delay_7s_button.active = true;
-        else if (page_delay >= 5000)
-            page_delay_5s_button.active = true;
-        else
+        else if (page_delay >= 6000)
+            page_delay_6s_button.active = true;
+        else if (page_delay >= 3000)
             page_delay_3s_button.active = true;
+        else
+            page_delay_0s_button.active = true;
     }
 
     private void set_dpi_combo (Gtk.ComboBox combo, int default_dpi, int current_dpi)
@@ -276,7 +274,7 @@ private class PreferencesDialog : Gtk.Dialog
         combo.add_attribute (renderer, "text", 1);
 
         var model = combo.model as Gtk.ListStore;
-        int[] scan_resolutions = {75, 150, 300, 600, 1200, 2400};
+        int[] scan_resolutions = {75, 150, 200, 300, 600, 1200, 2400};
         foreach (var dpi in scan_resolutions)
         {
             string label;

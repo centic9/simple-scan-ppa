@@ -13,8 +13,8 @@
 private const int DEFAULT_TEXT_DPI = 150;
 private const int DEFAULT_PHOTO_DPI = 300;
 
-[GtkTemplate (ui = "/org/gnome/SimpleScan/app-window.ui")]
-public class AppWindow : Gtk.ApplicationWindow
+[GtkTemplate (ui = "/org/gnome/SimpleScan/ui/app-window.ui")]
+public class AppWindow : Hdy.ApplicationWindow
 {
     private const GLib.ActionEntry[] action_entries =
     {
@@ -48,77 +48,79 @@ public class AppWindow : Gtk.ApplicationWindow
     private bool user_selected_device;
 
     [GtkChild]
-    private Gtk.HeaderBar header_bar;
+    private unowned Hdy.HeaderBar header_bar;
     [GtkChild]
-    private Gtk.Menu page_menu;
+    private unowned Gtk.Menu page_menu;
     [GtkChild]
-    private Gtk.Stack stack;
+    private unowned Gtk.Stack stack;
     [GtkChild]
-    private Gtk.Label status_primary_label;
+    private unowned Hdy.StatusPage status_page;
     [GtkChild]
-    private Gtk.ListStore device_model;
+    private unowned Gtk.Label status_secondary_label;
     [GtkChild]
-    private Gtk.ComboBox device_combo;
+    private unowned Gtk.ListStore device_model;
     [GtkChild]
-    private Gtk.Label status_secondary_label;
+    private unowned Gtk.Box device_buttons_box;
     [GtkChild]
-    private Gtk.Box main_vbox;
+    private unowned Gtk.ComboBox device_combo;
     [GtkChild]
-    private Gtk.RadioMenuItem custom_crop_menuitem;
+    private unowned Gtk.Box main_vbox;
     [GtkChild]
-    private Gtk.RadioMenuItem a3_menuitem;
+    private unowned Gtk.RadioMenuItem custom_crop_menuitem;
     [GtkChild]
-    private Gtk.RadioMenuItem a4_menuitem;
+    private unowned Gtk.RadioMenuItem a3_menuitem;
     [GtkChild]
-    private Gtk.RadioMenuItem a5_menuitem;
+    private unowned Gtk.RadioMenuItem a4_menuitem;
     [GtkChild]
-    private Gtk.RadioMenuItem a6_menuitem;
+    private unowned Gtk.RadioMenuItem a5_menuitem;
     [GtkChild]
-    private Gtk.RadioMenuItem letter_menuitem;
+    private unowned Gtk.RadioMenuItem a6_menuitem;
     [GtkChild]
-    private Gtk.RadioMenuItem legal_menuitem;
+    private unowned Gtk.RadioMenuItem letter_menuitem;
     [GtkChild]
-    private Gtk.RadioMenuItem four_by_six_menuitem;
+    private unowned Gtk.RadioMenuItem legal_menuitem;
     [GtkChild]
-    private Gtk.RadioMenuItem no_crop_menuitem;
+    private unowned Gtk.RadioMenuItem four_by_six_menuitem;
     [GtkChild]
-    private Gtk.MenuItem page_move_left_menuitem;
+    private unowned Gtk.RadioMenuItem no_crop_menuitem;
     [GtkChild]
-    private Gtk.MenuItem page_move_right_menuitem;
+    private unowned Gtk.MenuItem page_move_left_menuitem;
     [GtkChild]
-    private Gtk.MenuItem page_delete_menuitem;
+    private unowned Gtk.MenuItem page_move_right_menuitem;
     [GtkChild]
-    private Gtk.MenuItem crop_rotate_menuitem;
+    private unowned Gtk.MenuItem page_delete_menuitem;
     [GtkChild]
-    private Gtk.MenuItem copy_to_clipboard_menuitem;
+    private unowned Gtk.MenuItem crop_rotate_menuitem;
     [GtkChild]
-    private Gtk.Button save_button;
+    private unowned Gtk.MenuItem copy_to_clipboard_menuitem;
     [GtkChild]
-    private Gtk.Button stop_button;
+    private unowned Gtk.Button save_button;
     [GtkChild]
-    private Gtk.Button scan_button;
+    private unowned Gtk.Button stop_button;
     [GtkChild]
-    private Gtk.ActionBar action_bar;
+    private unowned Gtk.Button scan_button;
+    [GtkChild]
+    private unowned Gtk.ActionBar action_bar;
     private Gtk.ToggleButton crop_button;
     private Gtk.Button delete_button;
 
     [GtkChild]
-    private Gtk.Image scan_options_image;
+    private unowned Gtk.Image scan_options_image;
     [GtkChild]
-    private Gtk.Image scan_hint_image;
+    private unowned Gtk.Image scan_hint_image;
     [GtkChild]
-    private Gtk.RadioButton scan_single_radio;
+    private unowned Gtk.RadioButton scan_single_radio;
     [GtkChild]
-    private Gtk.RadioButton scan_adf_radio;
+    private unowned Gtk.RadioButton scan_adf_radio;
     [GtkChild]
-    private Gtk.RadioButton scan_batch_radio;
+    private unowned Gtk.RadioButton scan_batch_radio;
     [GtkChild]
-    private Gtk.RadioButton text_radio;
+    private unowned Gtk.RadioButton text_radio;
     [GtkChild]
-    private Gtk.RadioButton photo_radio;
+    private unowned Gtk.RadioButton photo_radio;
 
     [GtkChild]
-    private Gtk.MenuButton menu_button;
+    private unowned Gtk.MenuButton menu_button;
 
     private bool have_devices = false;
     private string? missing_driver = null;
@@ -249,38 +251,41 @@ public class AppWindow : Gtk.ApplicationWindow
         scan_button.sensitive = false;
         if (!have_devices)
         {
-            status_primary_label.set_text (/* Label shown when searching for scanners */
-                                           _("Searching for Scanners…"));
+            status_page.set_title (/* Label shown when searching for scanners */
+                                   _("Searching for Scanners…"));
             status_secondary_label.visible = false;
-            device_combo.visible = false;
+            device_buttons_box.visible = false;
         }
         else if (get_selected_device () != null)
         {
             scan_button.sensitive = true;
-            status_primary_label.set_text (/* Label shown when detected a scanner */
-                                           _("Ready to Scan"));
+            status_page.set_title (/* Label shown when detected a scanner */
+                                   _("Ready to Scan"));
             status_secondary_label.set_text (get_selected_device_label ());
             status_secondary_label.visible = false;
-            device_combo.visible = true;
+            device_buttons_box.visible = true;
+            device_buttons_box.sensitive = true;
             device_combo.sensitive = true;
         }
         else if (this.missing_driver != null)
         {
-            status_primary_label.set_text (/* Warning displayed when no drivers are installed but a compatible scanner is detected */
-                                           _("Additional software needed"));
+            status_page.set_title (/* Warning displayed when no drivers are installed but a compatible scanner is detected */
+                                   _("Additional Software Needed"));
             /* Instructions to install driver software */
             status_secondary_label.set_markup (_("You need to <a href=\"install-firmware\">install driver software</a> for your scanner."));
             status_secondary_label.visible = true;
-            device_combo.visible = false;
+            device_buttons_box.visible = false;
         }
         else
         {
             /* Warning displayed when no scanners are detected */
-            status_primary_label.set_text (_("No scanners detected"));
+            status_page.set_title (_("No Scanners Detected"));
             /* Hint to user on why there are no scanners detected */
-            status_secondary_label.set_text (_("Please check your scanner is connected and powered on"));
+            status_secondary_label.set_text (_("Please check your scanner is connected and powered on."));
             status_secondary_label.visible = true;
-            device_combo.visible = false;
+            device_buttons_box.visible = true;
+            device_buttons_box.sensitive = true;
+            device_combo.sensitive = false; // We would like to be refresh button to be active
         }
     }
 
@@ -796,9 +801,6 @@ public class AppWindow : Gtk.ApplicationWindow
             if (scanning)
                 stop_scan ();
 
-            have_devices = false;
-            /* Refresh list of devices to detect network scanners, and fix issues with disconnected scanners */
-            redetect ();
             clear_document ();
         });
     }
@@ -820,11 +822,20 @@ public class AppWindow : Gtk.ApplicationWindow
         new_document ();
     }
 
+    [GtkCallback]
+    private void redetect_button_clicked_cb (Gtk.Button button)
+    {
+        have_devices = false;
+        update_scan_status ();
+        redetect ();
+    }
+
     private void scan (ScanOptions options)
     {
-        status_primary_label.set_text (/* Label shown when scan started */
-                                       _("Contacting scanner…"));
-        device_combo.sensitive = false;
+        status_page.set_title (/* Label shown when scan started */
+                               _("Contacting Scanner…"));
+        device_buttons_box.visible = true;
+        device_buttons_box.sensitive = false;
         start_scan (get_selected_device (), options);
     }
 
@@ -838,8 +849,7 @@ public class AppWindow : Gtk.ApplicationWindow
     private void scan_adf_cb ()
     {
         var options = make_scan_options ();
-        options.type = ScanType.ADF_BOTH;
-        options.type = preferences_dialog.get_page_side ();
+        options.type = ScanType.ADF;
         scan (options);
     }
 
@@ -895,7 +905,7 @@ public class AppWindow : Gtk.ApplicationWindow
             scan_single_radio.active = true;
             scan_options_image.icon_name = "scanner-symbolic";
             break;
-        case ScanType.ADF_BOTH:
+        case ScanType.ADF:
             scan_adf_radio.active = true;
             scan_options_image.icon_name = "scan-type-adf-symbolic";
             break;
@@ -917,7 +927,7 @@ public class AppWindow : Gtk.ApplicationWindow
     private void scan_adf_radio_toggled_cb (Gtk.ToggleButton button)
     {
         if (button.active)
-            set_scan_type (ScanType.ADF_BOTH);
+            set_scan_type (ScanType.ADF);
     }
 
     [GtkCallback]
@@ -985,6 +995,7 @@ public class AppWindow : Gtk.ApplicationWindow
         options.brightness = brightness;
         options.contrast = contrast;
         options.page_delay = page_delay;
+        options.side = preferences_dialog.get_page_side ();
 
         return options;
     }
@@ -1006,8 +1017,6 @@ public class AppWindow : Gtk.ApplicationWindow
         stop_button.visible = true;
         var options = make_scan_options ();
         options.type = scan_type;
-        if (options.type == ScanType.ADF_BOTH)
-            options.type = preferences_dialog.get_page_side ();
         scan (options);
     }
 
@@ -1834,8 +1843,12 @@ public class AppWindow : Gtk.ApplicationWindow
     private void load ()
     {
         preferences_dialog = new PreferencesDialog (settings);
-        preferences_dialog.delete_event.connect (() => { return true; });
-        preferences_dialog.response.connect (() => { preferences_dialog.visible = false; });
+        preferences_dialog.delete_event.connect (() => {
+            preferences_dialog.visible = false;
+            return true;
+        });
+        preferences_dialog.transient_for = this;
+        preferences_dialog.modal = true;
 
         Gtk.Window.set_default_icon_name ("org.gnome.SimpleScan");
 
@@ -1872,9 +1885,9 @@ public class AppWindow : Gtk.ApplicationWindow
         section.append (_("Email"), "app.email");
         section.append (_("Print"), "app.print");
         section.append (C_("menu", "Reorder Pages"), "app.reorder");
-        section.append (_("Preferences"), "app.preferences");
         section = new Menu ();
         gear_menu.append_section (null, section);
+        section.append (_("Preferences"), "app.preferences");
         section.append (_("Keyboard Shortcuts"), "win.show-help-overlay");
         section.append (_("Help"), "app.help");
         section.append (_("About Document Scanner"), "app.about");
@@ -1885,7 +1898,7 @@ public class AppWindow : Gtk.ApplicationWindow
         /* Populate ActionBar (not supported in Glade) */
         /* https://bugzilla.gnome.org/show_bug.cgi?id=769966 */
         var button = new Gtk.Button.with_label (/* Label on new document button */
-                                               _("Start Again…"));
+                                               _("New Document"));
         button.visible = true;
         button.clicked.connect (new_document_cb);
         action_bar.pack_start (button);
@@ -1919,7 +1932,7 @@ public class AppWindow : Gtk.ApplicationWindow
 
         crop_button = new Gtk.ToggleButton ();
         crop_button.visible = true;
-        var image = new Gtk.Image.from_icon_name ("edit-cut-symbolic", Gtk.IconSize.BUTTON);
+        var image = new Gtk.Image.from_icon_name ("crop-symbolic", Gtk.IconSize.BUTTON);
         image.visible = true;
         image.margin_start = 18;
         image.margin_end = 18;
