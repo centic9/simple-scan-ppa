@@ -24,11 +24,29 @@ simple-scan (3.38.1-1) unstable; urgency=medium
 
  -- Jörg Frings-Fürst <debian@jff.email>  Sat, 17 Oct 2020 13:05:43 +0200
 
+simple-scan (3.38.1-0ubuntu0~ppa1) focal; urgency=medium
+
+  * Backport latest version to Focal.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sat, 10 Oct 2020 18:05:08 +0200
+
 simple-scan (3.36.4-1) unstable; urgency=medium
 
   * New upstream release.
 
  -- Jörg Frings-Fürst <debian@jff.email>  Sat, 22 Aug 2020 21:28:08 +0200
+
+simple-scan (3.36.2.1-1ubuntu0~ppa1) bionic; urgency=medium
+
+  * Backport to Bionic.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 17 Jul 2020 19:49:09 +0200
+
+simple-scan (3.36.2.1-1build1) groovy; urgency=medium
+
+  * Rebuild against new libsane 1.0.30.
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Mon, 22 Jun 2020 12:12:47 +0200
 
 simple-scan (3.36.2.1-1) unstable; urgency=medium
 
