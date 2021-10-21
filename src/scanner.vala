@@ -67,10 +67,15 @@ public enum ScanMode
 public enum ScanType
 {
     SINGLE,
-    ADF_FRONT,
-    ADF_BACK,
-    ADF_BOTH,
+    ADF,
     BATCH
+}
+
+public enum ScanSide
+{
+    FRONT,
+    BACK,
+    BOTH
 }
 
 public class ScanOptions : Object
@@ -79,6 +84,7 @@ public class ScanOptions : Object
     public ScanMode scan_mode;
     public int depth;
     public ScanType type;
+    public ScanSide side;
     public int paper_width;
     public int paper_height;
     public int brightness;
@@ -94,6 +100,7 @@ private class ScanJob : Object
     public ScanMode scan_mode;
     public int depth;
     public ScanType type;
+    public ScanSide side;
     public int page_width;
     public int page_height;
     public int brightness;
@@ -361,7 +368,12 @@ public class Scanner : Object
             if (vendor == "Hewlett-Packard")
                 vendor = "HP";
 
-            scan_device.label = "%s %s".printf (vendor, device_list[i].model);
+            /* Don't repeat vendor name */
+            if (device_list[i].model.down().has_prefix (vendor.down()))
+                scan_device.label = device_list[i].model;
+            else
+                scan_device.label = "%s %s".printf (vendor, device_list[i].model);
+
             /* Replace underscores in name */
             scan_device.label.replace ("_", " ");
 
@@ -662,10 +674,12 @@ public class Scanner : Object
         switch (option.constraint_type)
         {
         case Sane.ConstraintType.RANGE:
-            if (option.type == Sane.ValueType.FIXED)
-                s += " min=%f, max=%f, quant=%d".printf (Sane.UNFIX (option.range.min), Sane.UNFIX (option.range.max), (int) option.range.quant);
-            else
-                s += " min=%d, max=%d, quant=%d".printf ((int) option.range.min, (int) option.range.max, (int) option.range.quant);
+            if (option.range != null) {
+                if (option.type == Sane.ValueType.FIXED)
+                    s += " min=%f, max=%f, quant=%d".printf (Sane.UNFIX (option.range.min), Sane.UNFIX (option.range.max), (int) option.range.quant);
+                else
+                    s += " min=%d, max=%d, quant=%d".printf ((int) option.range.min, (int) option.range.max, (int) option.range.quant);
+            }
             break;
         case Sane.ConstraintType.WORD_LIST:
             s += " values=[";
@@ -682,11 +696,13 @@ public class Scanner : Object
             break;
         case Sane.ConstraintType.STRING_LIST:
             s += " values=[";
-            for (var i = 0; option.string_list[i] != null; i++)
-            {
-                if (i != 0)
-                    s += ", ";
-                s += "\"%s\"".printf (option.string_list[i]);
+            if (option.string_list != null) {
+                for (var i = 0; option.string_list[i] != null; i++)
+                {
+                    if (i != 0)
+                        s += ", ";
+                        s += "\"%s\"".printf (option.string_list[i]);
+                }
             }
             s += "]";
             break;
@@ -902,6 +918,62 @@ public class Scanner : Object
         state = ScanState.GET_OPTION;
     }
 
+    private void set_adf (ScanJob job, Sane.OptionDescriptor option, Sane.Int index)
+    {
+        string[] adf_sources =
+        {
+            "Automatic Document Feeder",
+            Sane.I18N ("Automatic Document Feeder"),
+            "ADF",
+            "Automatic Document Feeder(centrally aligned)", /* Seen in the proprietary brother3 driver */
+            "Automatic Document Feeder(left aligned)", /* Seen in the proprietary brother3 driver */
+            "ADF Simplex" /* Samsung unified driver. LP: # 892915 */
+        };
+
+        string[] adf_front_sources =
+        {
+            "ADF Front",
+            Sane.I18N ("ADF Front")
+        };
+
+        string[] adf_back_sources =
+        {
+            "ADF Back",
+            Sane.I18N ("ADF Back")
+        };
+
+        string[] adf_duplex_sources =
+        {
+            "ADF Duplex",
+            "Duplex ADF", /* Brother DS-720, #157 */
+            Sane.I18N ("ADF Duplex"),
+            "ADF Duplex - Long-Edge Binding", /* Samsung unified driver. LP: # 892915 */
+            "ADF Duplex - Short-Edge Binding",
+            "Duplex", /* HP duplex scan support. LP: #1353599 */
+            "Automatic Document Feeder(centrally aligned,Duplex)", /* Brother duplex scan support. LP: #1343773 */
+            "Automatic Document Feeder(left aligned,Duplex)"
+        };
+
+        if (job.side == ScanSide.FRONT)
+        {
+            if (!set_constrained_string_option (handle, option, index, adf_front_sources, null))
+                if (!set_constrained_string_option (handle, option, index, adf_sources, null))
+                    warning ("Unable to set front ADF source, please file a bug");
+        }
+        else if (job.side == ScanSide.BACK)
+        {
+            if (!set_constrained_string_option (handle, option, index, adf_back_sources, null))
+                if (!set_constrained_string_option (handle, option, index, adf_sources, null))
+                    warning ("Unable to set back ADF source, please file a bug");
+        }
+        else if (job.side == ScanSide.BOTH)
+        {
+            if (!set_constrained_string_option (handle, option, index, adf_duplex_sources, null))
+                if (!set_constrained_string_option (handle, option, index, adf_sources, null))
+                    warning ("Unable to set duplex ADF source, please file a bug");
+        }
+    }
+
     private void do_get_option ()
     {
         var job = (ScanJob) job_queue.data;
@@ -934,62 +1006,20 @@ public class Scanner : Object
                     "Document Table" /* Epson scanners, eg. ET-3760 */
                 };
 
-                string[] adf_sources =
-                {
-                    "Automatic Document Feeder",
-                    Sane.I18N ("Automatic Document Feeder"),
-                    "ADF",
-                    "Automatic Document Feeder(left aligned)", /* Seen in the proprietary brother3 driver */
-                    "Automatic Document Feeder(centrally aligned)", /* Seen in the proprietary brother3 driver */
-                    "ADF Simplex" /* Samsung unified driver. LP: # 892915 */
-                };
-
-                string[] adf_front_sources =
-                {
-                    "ADF Front",
-                    Sane.I18N ("ADF Front")
-                };
-
-                string[] adf_back_sources =
-                {
-                    "ADF Back",
-                    Sane.I18N ("ADF Back")
-                };
-
-                string[] adf_duplex_sources =
-                {
-                    "ADF Duplex",
-                    "Duplex ADF", /* Brother DS-720, #157 */
-                    Sane.I18N ("ADF Duplex"),
-                    "ADF Duplex - Long-Edge Binding", /* Samsung unified driver. LP: # 892915 */
-                    "ADF Duplex - Short-Edge Binding",
-                    "Duplex", /* HP duplex scan support. LP: #1353599 */
-                    "Automatic Document Feeder(centrally aligned,Duplex)", /* Brother duplex scan support. LP: #1343773 */
-                    "Automatic Document Feeder(left aligned,Duplex)"
-                };
-
                 switch (job.type)
                 {
                 case ScanType.SINGLE:
                 case ScanType.BATCH:
                     if (!set_default_option (handle, option, index))
                         if (!set_constrained_string_option (handle, option, index, flatbed_sources, null))
-                            warning ("Unable to set single page source, please file a bug");
+                        {
+                            warning ("Unable to set single page source, trying to set ADF instead");
+                            warning ("If Flatbed is existing and it is not set, please file a bug");
+                            set_adf (job, option, index);
+                        }
                     break;
-                case ScanType.ADF_FRONT:
-                    if (!set_constrained_string_option (handle, option, index, adf_front_sources, null))
-                        if (!set_constrained_string_option (handle, option, index, adf_sources, null))
-                            warning ("Unable to set front ADF source, please file a bug");
-                    break;
-                case ScanType.ADF_BACK:
-                    if (!set_constrained_string_option (handle, option, index, adf_back_sources, null))
-                        if (!set_constrained_string_option (handle, option, index, adf_sources, null))
-                            warning ("Unable to set back ADF source, please file a bug");
-                    break;
-                case ScanType.ADF_BOTH:
-                    if (!set_constrained_string_option (handle, option, index, adf_duplex_sources, null))
-                        if (!set_constrained_string_option (handle, option, index, adf_sources, null))
-                            warning ("Unable to set duplex ADF source, please file a bug");
+                case ScanType.ADF:
+                    set_adf (job, option, index);
                     break;
                 }
             }
@@ -1067,7 +1097,7 @@ public class Scanner : Object
             if (option != null)
             {
                 if (option.type == Sane.ValueType.BOOL)
-                    set_bool_option (handle, option, index, job.type == ScanType.ADF_BOTH, null);
+                    set_bool_option (handle, option, index, job.side == ScanSide.BOTH, null);
             }
 
             /* Non-standard Epson GT-S50 ADF options */
@@ -1082,7 +1112,7 @@ public class Scanner : Object
                 {
                     "Duplex"
                 };
-                if (job.type == ScanType.ADF_BOTH)
+                if (job.side == ScanSide.BOTH)
                     set_constrained_string_option (handle, option, index, adf_duplex_modes, null);
                 else
                     set_constrained_string_option (handle, option, index, adf_simplex_modes, null);
@@ -1103,7 +1133,15 @@ public class Scanner : Object
             }
 
             /* Set resolution and bit depth */
-            option = get_option_by_name (handle, Sane.NAME_SCAN_RESOLUTION, out index);
+            /* Epson may have separate resolution settings for x and y axes, which is preferable options to set */
+            option = get_option_by_name (handle, Sane.NAME_SCAN_X_RESOLUTION, out index);
+            if (option != null && (0 != (option.cap & Sane.Capability.SOFT_SELECT)))  // L4160 has non-selectable separate options
+            {
+                set_fixed_or_int_option (handle, option, index, job.dpi, out job.dpi);
+                option = get_option_by_name (handle, Sane.NAME_SCAN_Y_RESOLUTION, out index);
+            }
+            else
+                option = get_option_by_name (handle, Sane.NAME_SCAN_RESOLUTION, out index);
             if (option == null) /* #161 Lexmark CX310dn Duplex */
                 option = get_option_by_name (handle, "scan-resolution", out index);
             if (option != null)
@@ -1134,11 +1172,17 @@ public class Scanner : Object
                 else
                     set_option_to_max (handle, option, index);
             }
-            if (job.page_width == 0) /* #90 Fix automatic mode for Epson scanners */
+            if (job.page_width == 0)
             {
+                /* #90 Fix automatic mode for Epson scanners */
                 option = get_option_by_name (handle, "scan-area", out index);
                 if (option != null)
                     set_string_option (handle, option, index, "Maximum", null);
+
+                /* #264 Enable automatic document size for Brother scanners */
+                option = get_option_by_name (handle, "AutoDocumentSize", out index);
+                if (option != null)
+                    set_bool_option (handle, option, index, true, null);
             }
             /* Set page size */
             option = get_option_by_name (handle, Sane.NAME_PAGE_WIDTH, out index);
@@ -1422,6 +1466,10 @@ public class Scanner : Object
         if (status == Sane.Status.NO_DOCS)
         {
             do_complete_document ();
+            if (page_number == 0)
+                fail_scan (status,
+                    /* Error displayed when no documents at the start of scanning */
+                    _("Document feeder empty"));
             return;
         }
 
@@ -1647,12 +1695,8 @@ public class Scanner : Object
             return "single";
         case ScanType.BATCH:
             return "batch";
-        case ScanType.ADF_FRONT:
-            return "adf-front";
-        case ScanType.ADF_BACK:
-            return "adf-back";
-        case ScanType.ADF_BOTH:
-            return "adf-both";
+        case ScanType.ADF:
+            return "adf";
         default:
             return "%d".printf (type);
         }
@@ -1666,23 +1710,51 @@ public class Scanner : Object
             return ScanType.SINGLE;
         case "batch":
             return ScanType.BATCH;
-        case "adf-front":
-            return ScanType.ADF_FRONT;
-        case "adf-back":
-            return ScanType.ADF_BACK;
-        case "adf-both":
-            return ScanType.ADF_BOTH;
+        case "adf":
+            return ScanType.ADF;
         default:
             warning ("Unknown ScanType: %s. Please report this error.", type);
             return ScanType.SINGLE;
         }
     }
 
+    public static string side_to_string (ScanSide side)
+    {
+        switch (side)
+        {
+        case ScanSide.FRONT:
+            return "front";
+        case ScanSide.BACK:
+            return "back";
+        case ScanSide.BOTH:
+            return "both";
+        default:
+            return "%d".printf (side);
+        }
+    }
+
+    public static ScanSide side_from_string (string side)
+    {
+        switch (side)
+        {
+        case "front":
+            return ScanSide.FRONT;
+        case "back":
+            return ScanSide.BACK;
+        case "both":
+            return ScanSide.BOTH;
+        default:
+            warning ("Unknown ScanSide: %s. Please report this error.", side);
+            return ScanSide.FRONT;
+        }
+    }
+
     public void scan (string? device, ScanOptions options)
     {
-        debug ("Scanner.scan (\"%s\", dpi=%d, scan_mode=%s, depth=%d, type=%s, paper_width=%d, paper_height=%d, brightness=%d, contrast=%d, delay=%dms)",
+        debug ("Scanner.scan (\"%s\", dpi=%d, scan_mode=%s, depth=%d, type=%s, side=%s, paper_width=%d, paper_height=%d, brightness=%d, contrast=%d, delay=%dms)",
                device != null ? device : "(null)", options.dpi, get_scan_mode_string (options.scan_mode), options.depth,
-               type_to_string (options.type), options.paper_width, options.paper_height,
+               type_to_string (options.type), side_to_string (options.side),
+               options.paper_width, options.paper_height,
                options.brightness, options.contrast, options.page_delay);
         var request = new RequestStartScan ();
         request.job = new ScanJob ();
@@ -1692,6 +1764,7 @@ public class Scanner : Object
         request.job.scan_mode = options.scan_mode;
         request.job.depth = options.depth;
         request.job.type = options.type;
+        request.job.side = options.side;
         request.job.page_width = options.paper_width;
         request.job.page_height = options.paper_height;
         request.job.brightness = options.brightness;

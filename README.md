@@ -7,23 +7,38 @@
 It allows you to capture images using [image scanners](https://en.wikipedia.org/wiki/Image_scanner)
 (e.g. flatbed scanners) that have suitable [SANE drivers](http://sane-project.org/) installed.
 
-# Building from source
+# Building the flatpak with GNOME Builder
+
+It is recommended to use the development flatpak for developing this application.
+That way you won't have to download all dependencies yourself and it'll be consistent between all distros.
+
+1. Download [GNOME Builder](https://flathub.org/apps/details/org.gnome.Builder)
+2. Click the `Clone Repository` button in Builder and use https://gitlab.gnome.org/GNOME/simple-scan.git as the URL.
+3. Click the Run button in the headerbar
+
+Note that this flatpak requires access to all devices (--device=all), and so isn't made for general use.
+For this reason and until a more suitable solution is found to interact with a host `saned`, please don't
+try to publish it on Flathub.
+
+# Building manually from source
 
 Install the dependencies
 
 For Ubuntu/Debian:
 ```
-$ sudo apt install git meson valac libgtk-3-dev libgusb-dev libcolord-dev libpackagekit-glib2-dev libwebp-dev libsane-dev gettext itstool
+$ sudo apt install -y meson valac gcc gettext itstool gobject-introspection libfribidi-dev libgirepository1.0-dev libgtk-3-dev libgusb-dev libcolord-dev libpackagekit-glib2-dev libwebp-dev libsane-dev git ca-certificates
+
 ```
 
 For Fedora:
 ```
-$ sudo dnf install -y meson vala gettext itstool gtk3-devel libgusb-devel colord-devel PackageKit-glib-devel libwebp-devel sane-backends-devel
+$ sudo dnf install -y meson vala gettext itstool fribidi-devel gtk3-devel gobject-introspection-devel libgusb-devel colord-devel PackageKit-glib-devel libwebp-devel sane-backends-devel git
 ```
 
 For Arch Linux:
 ```
-sudo pacman -S meson vala gettext itstool gtk3 libusb colord libpackagekit-glib libwebp sane
+sudo pacman -S meson vala gettext itstool fribidi gtk3 gobject-introspection libgusb colord libwebp sane git
+
 ```
 
 Get the source:
@@ -37,6 +52,13 @@ Build and run:
 $ meson --prefix $PWD/_install _build
 $ ninja -C _build all install
 $ XDG_DATA_DIRS=_install/share:$XDG_DATA_DIRS ./_install/bin/simple-scan
+```
+
+If libhandy is used as a subproject (i.e. system libhandy not found or
+too old), then make sure to use the resulting .so file as well when
+running, e.g. by using the `LD_LIBRARY_PATH` variable:
+```
+$ LD_LIBRARY_PATH=_install/lib/x86_64-linux-gnu XDG_DATA_DIRS=_install/share:$XDG_DATA_DIRS ./_install/bin/simple-scan
 ```
 
 # Debugging
