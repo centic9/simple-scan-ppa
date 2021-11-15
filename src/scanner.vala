@@ -926,6 +926,7 @@ public class Scanner : Object
             Sane.I18N ("Automatic Document Feeder"),
             "ADF",
             "Automatic Document Feeder(centrally aligned)", /* Seen in the proprietary brother3 driver */
+            "Automatic Document Feeder(center aligned)", /* Seen in Brother's proprietary brscan5 driver */
             "Automatic Document Feeder(left aligned)", /* Seen in the proprietary brother3 driver */
             "ADF Simplex" /* Samsung unified driver. LP: # 892915 */
         };
@@ -1102,6 +1103,10 @@ public class Scanner : Object
 
             /* Non-standard Epson GT-S50 ADF options */
             option = get_option_by_name (handle, "adf-mode", out index);
+
+            /* Support Canon DR-C240 ADF_BOTH options */
+            if (option == null)
+                option = get_option_by_name (handle, "ScanMode", out index);
             if (option != null)
             {
                 string[] adf_simplex_modes =
