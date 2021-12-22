@@ -1,3 +1,9 @@
+simple-scan (40.5-1ubuntu0~ppa2) focal; urgency=medium
+
+  * Add dependency on gir1.2-rsvg-2.0 to make cmpsvg from scour work.
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Wed, 22 Dec 2021 23:05:34 +0100
+
 simple-scan (40.5-1ubuntu0~ppa1) focal; urgency=medium
 
   * Backport latest release.
