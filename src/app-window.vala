@@ -720,7 +720,10 @@ public class AppWindow : Hdy.ApplicationWindow
         save_button.sensitive = false;
         try
         {
-            yield book.save_async (mime_type, settings.get_int ("jpeg-quality"), file, (fraction) =>
+            yield book.save_async (mime_type, settings.get_int ("jpeg-quality"), file,
+                settings.get_boolean ("postproc-enabled"), settings.get_string ("postproc-script"),
+                settings.get_string ("postproc-arguments"), settings.get_boolean ("postproc-keep-original"),
+                (fraction) =>
             {
                 progress_bar.set_fraction (fraction);
             }, cancellable);
@@ -793,7 +796,7 @@ public class AppWindow : Hdy.ApplicationWindow
         prompt_to_save_async.begin (/* Text in dialog warning when a document is about to be lost */
                                     _("Save current document?"),
                                     /* Button in dialog to create new document and discard unsaved document */
-                                    _("Discard Changes"), (obj, res) =>
+                                    _("_Discard Changes"), (obj, res) =>
         {
             if (!prompt_to_save_async.end(res))
                 return;
@@ -802,6 +805,7 @@ public class AppWindow : Hdy.ApplicationWindow
                 stop_scan ();
 
             clear_document ();
+            autosave_manager.cleanup ();
         });
     }
 
@@ -904,14 +908,17 @@ public class AppWindow : Hdy.ApplicationWindow
         case ScanType.SINGLE:
             scan_single_radio.active = true;
             scan_options_image.icon_name = "scanner-symbolic";
+            scan_button.tooltip_text = _("Scan a single page from the scanner");
             break;
         case ScanType.ADF:
             scan_adf_radio.active = true;
             scan_options_image.icon_name = "scan-type-adf-symbolic";
+            scan_button.tooltip_text = _("Scan multiple pages from the scanner");
             break;
         case ScanType.BATCH:
             scan_batch_radio.active = true;
             scan_options_image.icon_name = "scan-type-batch-symbolic";
+            scan_button.tooltip_text = _("Scan multiple pages from the scanner");
             break;
         }
     }
@@ -1395,39 +1402,7 @@ public class AppWindow : Hdy.ApplicationWindow
                 box.add (page_box);
             }
 
-            /* Get colours for each page (from Tango palette) */
-            var r = 1.0;
-            var g = 1.0;
-            var b = 1.0;
-            switch (side)
-            {
-            case 'F':
-                /* Plum */
-                r = 0x75 / 255.0;
-                g = 0x50 / 255.0;
-                b = 0x7B / 255.0;
-                break;
-            case 'B':
-                /* Orange */
-                r = 0xF5 / 255.0;
-                g = 0x79 / 255.0;
-                b = 0.0;
-                break;
-            case 'C':
-                /* Butter to Scarlet Red */
-                var p = (items[i] - '1') / 5.0;
-                r = (0xED / 255.0) * (1 - p) + 0xCC * p;
-                g = (0xD4 / 255.0) * (1 - p);
-                b = 0;
-                break;
-            }
-
-            /* Mix with white to look more paper like */
-            r = r + (1.0 - r) * 0.7;
-            g = g + (1.0 - g) * 0.7;
-            b = b + (1.0 - b) * 0.7;
-
-            var icon = new PageIcon ("%c".printf (items[i]), r, g, b);
+            var icon = new PageIcon (side, items[i] - '1');
             icon.visible = true;
             page_box.add (icon);
         }
@@ -1501,7 +1476,10 @@ public class AppWindow : Hdy.ApplicationWindow
                 filename = "scan.jpg";
             }
             var file = File.new_for_path (Path.build_filename (dir, filename));
-            yield book.save_async (mime_type, settings.get_int ("jpeg-quality"), file, null, null);
+            yield book.save_async (mime_type, settings.get_int ("jpeg-quality"), file,
+                settings.get_boolean ("postproc-enabled"), settings.get_string ("postproc-script"),
+                settings.get_string ("postproc-arguments"), settings.get_boolean ("postproc-keep-original"),
+                null, null);
             var command_line = "xdg-email";
             if (mime_type == "application/pdf")
                 command_line += " --attach %s".printf (file.get_path ());
@@ -1566,29 +1544,23 @@ public class AppWindow : Hdy.ApplicationWindow
     {
         string[] authors = { "Robert Ancell <robert.ancell@canonical.com>" };
 
-        /* The license this software is under (GPL3+) */
-        string license = _("This program is free software: you can redistribute it and/or modify\nit under the terms of the GNU General Public License as published by\nthe Free Software Foundation, either version 3 of the License, or\n(at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License\nalong with this program.  If not, see <http://www.gnu.org/licenses/>.");
-
-        /* Title of about dialog */
         string title = _("About Document Scanner");
 
-        /* Description of program */
         string description = _("Simple document scanning tool");
 
         Gtk.show_about_dialog (this,
-                               "title", title,
-                               "program-name", _("Document Scanner"),
-                               "version", VERSION,
-                               "comments", description,
-                               "logo-icon-name", "org.gnome.SimpleScan",
-                               "authors", authors,
-                               "translator-credits", _("translator-credits"),
-                               "website", "https://gitlab.gnome.org/GNOME/simple-scan",
-                               "copyright", "Copyright © 2009-2018 Canonical Ltd.",
-                               "license", license,
-                               "wrap-license", true,
-                               null);
-    }
+                                "title", title,
+                                "authors", authors,
+                                "translator-credits", _("translator-credits"),
+                                "comments", description,
+                                "copyright", "Copyright © 2009-2018 Canonical Ltd.",
+                                "license-type", Gtk.License.GPL_3_0,
+                                "program-name", _("Document Scanner"),
+                                "logo-icon-name", "org.gnome.SimpleScan",
+                                "version", VERSION,
+                                "website", "https://gitlab.gnome.org/GNOME/simple-scan",
+                                "wrap-license", true);
+        }
 
     private void about_cb ()
     {
@@ -1600,7 +1572,7 @@ public class AppWindow : Hdy.ApplicationWindow
         prompt_to_save_async.begin (/* Text in dialog warning when a document is about to be lost */
                                     _("Save document before quitting?"),
                                     /* Text in dialog warning when a document is about to be lost */
-                                    _("Quit without Saving"), (obj, res) =>
+                                    _("_Quit without Saving"), (obj, res) =>
         {
             if (!prompt_to_save_async.end(res))
                 return;
@@ -1882,23 +1854,23 @@ public class AppWindow : Hdy.ApplicationWindow
         var gear_menu = new Menu ();
         var section = new Menu ();
         gear_menu.append_section (null, section);
-        section.append (_("Email"), "app.email");
-        section.append (_("Print"), "app.print");
-        section.append (C_("menu", "Reorder Pages"), "app.reorder");
+        section.append (_("_Email"), "app.email");
+        section.append (_("Pri_nt"), "app.print");
+        section.append (C_("menu", "_Reorder Pages"), "app.reorder");
         section = new Menu ();
         gear_menu.append_section (null, section);
-        section.append (_("Preferences"), "app.preferences");
-        section.append (_("Keyboard Shortcuts"), "win.show-help-overlay");
-        section.append (_("Help"), "app.help");
-        section.append (_("About Document Scanner"), "app.about");
+        section.append (_("_Preferences"), "app.preferences");
+        section.append (_("_Keyboard Shortcuts"), "win.show-help-overlay");
+        section.append (_("_Help"), "app.help");
+        section.append (_("_About Document Scanner"), "app.about");
         menu_button.set_menu_model (gear_menu);
 
         app.add_window (this);
 
         /* Populate ActionBar (not supported in Glade) */
         /* https://bugzilla.gnome.org/show_bug.cgi?id=769966 */
-        var button = new Gtk.Button.with_label (/* Label on new document button */
-                                               _("New Document"));
+        var button = new Gtk.Button.with_mnemonic (/* Label on new document button */
+                                               _("_New Document"));
         button.visible = true;
         button.clicked.connect (new_document_cb);
         action_bar.pack_start (button);
@@ -1995,7 +1967,7 @@ public class AppWindow : Hdy.ApplicationWindow
 
     private string state_filename
     {
-        owned get { return Path.build_filename (Environment.get_user_cache_dir (), "simple-scan", "state"); }
+        owned get { return Path.build_filename (Environment.get_user_config_dir (), "simple-scan", "state"); }
     }
 
     private void load_state ()
@@ -2020,11 +1992,11 @@ public class AppWindow : Hdy.ApplicationWindow
             window_height = 400;
         window_is_maximized = state_get_boolean (f, "window", "is-maximized");
         window_is_fullscreen = state_get_boolean (f, "window", "is-fullscreen");
-        scan_type = Scanner.type_from_string(state_get_string (f, "scanner", "scan-type", "single"));
+        scan_type = Scanner.type_from_string(state_get_string (f, "scanner", "scan-type"));
         set_scan_type (scan_type);
     }
 
-    private string state_get_string (KeyFile f, string group_name, string key, string default)
+    private string state_get_string (KeyFile f, string group_name, string key, string default = "")
     {
         try
         {
@@ -2060,6 +2032,7 @@ public class AppWindow : Hdy.ApplicationWindow
         }
     }
 
+    private static string STATE_DIR = Path.build_filename (Environment.get_user_config_dir (), "simple-scan", null);
     private void save_state (bool force = false)
     {
         if (!force)
@@ -2085,6 +2058,7 @@ public class AppWindow : Hdy.ApplicationWindow
         f.set_string ("scanner", "scan-type", Scanner.type_to_string(scan_type));
         try
         {
+            DirUtils.create_with_parents (STATE_DIR, 0700);
             FileUtils.set_contents (state_filename, f.to_data ());
         }
         catch (Error e)

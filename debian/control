@@ -2,7 +2,7 @@ Source: simple-scan
 Section: gnome
 Priority: optional
 Maintainer: Jörg Frings-Fürst <debian@jff.email>
-Standards-Version: 4.6.0.0
+Standards-Version: 4.6.0.1
 Rules-Requires-Root: no
 Build-Depends:
  cmake,
