@@ -14,7 +14,7 @@ public class SimpleScan : Gtk.Application
     static bool show_version;
     static bool debug_enabled;
     static string? fix_pdf_filename = null;
-    public const OptionEntry[] options =
+    const OptionEntry[] options =
     {
         { "version", 'v', 0, OptionArg.NONE, ref show_version,
           /* Help string for command line --version flag */
@@ -51,6 +51,7 @@ public class SimpleScan : Gtk.Application
         base.startup ();
 
         Hdy.init ();
+        Hdy.StyleManager.get_default ().color_scheme = PREFER_LIGHT;
 
         app = new AppWindow ();
         book = app.book;
