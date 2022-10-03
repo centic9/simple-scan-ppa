@@ -2,7 +2,7 @@
 <component type="desktop">
   <id>simple-scan.desktop</id>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license>GPL-3.0+ and CC-BY-SA-3.0</project_license>
+  <project_license>GPL-3.0+</project_license>
   <name>Document Scanner</name>
   <summary>Make a digital copy of your photos and documents</summary>
   <description>
@@ -23,8 +23,24 @@
   <url type="homepage">https://gitlab.gnome.org/GNOME/simple-scan</url>
   <url type="bugtracker">https://gitlab.gnome.org/GNOME/simple-scan/issues</url>
   <url type="donation">https://www.gnome.org/friends/</url>
+  <url type="vcs-browser">https://gitlab.gnome.org/GNOME/simple-scan</url>
   <developer_name>The GNOME Project</developer_name>
   <releases>
+    <release date="2022-09-19" version="42.5">
+      <description>
+        <ul>
+          <li>Updated translations.</li>
+        </ul>
+      </description>
+    </release>
+    <release date="2022-04-19" version="42.1">
+      <description>
+        <ul>
+          <li>Clarify project license.</li>
+          <li>Updated translations.</li>
+        </ul>
+      </description>
+    </release>
     <release date="2022-03-18" version="42.0">
       <description>
         <ul>

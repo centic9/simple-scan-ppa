@@ -2,13 +2,14 @@ Source: simple-scan
 Section: gnome
 Priority: optional
 Maintainer: Jörg Frings-Fürst <debian@jff.email>
-Standards-Version: 4.6.0.1
+Standards-Version: 4.6.1.0
 Rules-Requires-Root: no
 Build-Depends:
  cmake,
  debhelper-compat (= 13),
+ dh-sequence-gnome,
+ dh-sequence-scour,
  gettext,
- gnome-pkg-tools,
  itstool,
  libcairo2-dev,
  libcolord-dev,
@@ -16,7 +17,7 @@ Build-Depends:
  libgtk-3-dev,
  libgdk-pixbuf2.0-dev,
  libgusb-dev,
- libhandy-1-dev (>= 1.1.90),
+ libhandy-1-dev (>= 1.6.0),
  libpackagekit-glib2-dev,
  libsane-dev,
  libwebp-dev,

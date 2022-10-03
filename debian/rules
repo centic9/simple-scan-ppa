@@ -37,18 +37,7 @@
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 %:
-	dh $@  --buildsystem=meson --with gnome,scour
-
-override_dh_installdocs:
-	dh_installdocs --link-doc=simple-scan
-
-override_dh_installchangelogs:
-	dh_installchangelogs NEWS
+	dh $@  --with gnome,scour
 
 override_dh_gnome_clean:
 	dh_gnome_clean --no-control
-
-# Work around Ubuntu translations issue
-override_dh_translations:
-	ninja -C obj-$(DEB_HOST_GNU_TYPE) simple-scan-pot
-	dh_translations
