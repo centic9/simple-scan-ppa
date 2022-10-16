@@ -28,6 +28,7 @@ Build-Depends:
  python3-gi-cairo,
  python3-scour,
  scour,
+ gir1.2-rsvg-2.0,
  valac,
  zlib1g-dev
 Homepage: https://gitlab.gnome.org/GNOME/simple-scan
