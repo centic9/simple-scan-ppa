@@ -1,3 +1,9 @@
+simple-scan (42.5-2ubuntu0~ppa1) jammy; urgency=medium
+
+  * Backport to Jammy
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Sun, 16 Oct 2022 10:23:23 +0200
+
 simple-scan (42.5-2) unstable; urgency=medium
 
   * debian/control: Bump Build-Depends libhandy-1-dev to >= 1.6.0
