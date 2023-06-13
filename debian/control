@@ -2,22 +2,25 @@ Source: simple-scan
 Section: gnome
 Priority: optional
 Maintainer: Jörg Frings-Fürst <debian@jff.email>
-Standards-Version: 4.6.1.0
+Standards-Version: 4.6.2.0
 Rules-Requires-Root: no
 Build-Depends:
- cmake,
  debhelper-compat (= 13),
  dh-sequence-gnome,
  dh-sequence-scour,
  gettext,
+ gir1.2-rsvg-2.0,
  itstool,
  libcairo2-dev,
  libcolord-dev,
+ libfribidi-dev,
  libglib2.0-dev,
+ libgirepository1.0-dev,
  libgtk-3-dev,
- libgdk-pixbuf2.0-dev,
+ libgdk-pixbuf-2.0-dev,
  libgusb-dev,
  libhandy-1-dev (>= 1.6.0),
+ libjson-glib-dev,
  libpackagekit-glib2-dev,
  libsane-dev,
  libwebp-dev,
@@ -31,8 +34,8 @@ Build-Depends:
  valac,
  zlib1g-dev
 Homepage: https://gitlab.gnome.org/GNOME/simple-scan
-Vcs-Git: git://jff.email/opt/git/simple-scan.git
-Vcs-Browser: https://jff.email/cgit/simple-scan.git
+Vcs-Git: git://git.jff.email/simple-scan.git
+Vcs-Browser: https://git.jff.email/cgit/simple-scan.git
 
 Package: simple-scan
 Architecture: linux-any

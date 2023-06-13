@@ -1,3 +1,19 @@
+simple-scan (44.0-1) unstable; urgency=medium
+
+  * New upstream release.
+    - Add Build-Depend libjson-glib-dev, libfribidi-dev, gir1.2-rsvg-2.0,
+      libgirepository1.0-dev
+    - Remove Build-Depend , cmake
+  * debian/control:
+    - Change to new repository.
+    - Switch libgdk-pixbuf2.0-dev to libgdk-pixbuf-2.0-dev (Closes: #1037399).
+  * debian/copyright:
+    - Refresh for the new release.
+    - Add year 2023 to myself.
+  * Declare compliance with Debian Policy 4.6.2.0 (No changes needed).
+
+ -- Jörg Frings-Fürst <debian@jff.email>  Tue, 13 Jun 2023 17:38:48 +0200
+
 simple-scan (42.5-2) unstable; urgency=medium
 
   * debian/control: Bump Build-Depends libhandy-1-dev to >= 1.6.0
