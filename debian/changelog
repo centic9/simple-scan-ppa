@@ -1,3 +1,28 @@
+simple-scan (46.0-0ubuntu2) noble; urgency=medium
+
+  * No-change rebuild for CVE-2024-3094
+
+ -- Steve Langasek <steve.langasek@ubuntu.com>  Sun, 31 Mar 2024 17:13:37 +0000
+
+simple-scan (46.0-0ubuntu1) noble; urgency=medium
+
+  * New upstream release
+
+ -- Jeremy Bícha <jbicha@ubuntu.com>  Mon, 18 Mar 2024 14:56:36 -0400
+
+simple-scan (46~beta-0ubuntu1) noble; urgency=medium
+
+  * New upstream release
+
+ -- Jeremy Bícha <jbicha@ubuntu.com>  Tue, 27 Feb 2024 18:10:12 -0500
+
+simple-scan (44.0+git20230905-0ubuntu1) mantic; urgency=medium
+
+  * New upstream git snapshot
+  * Switch from GTK3 + libhandy to GTK4 + libadwaita
+
+ -- Jeremy Bícha <jbicha@ubuntu.com>  Tue, 05 Sep 2023 14:38:49 -0400
+
 simple-scan (44.0-1) unstable; urgency=medium
 
   * New upstream release.

@@ -6,7 +6,7 @@ description: |
 
 grade: stable # must be 'stable' to release into candidate/stable channels
 confinement: strict
-base: core20
+base: core22
 
 slots:
   # for GtkApplication registration
@@ -28,7 +28,7 @@ apps:
       - io-ports-control
       - raw-usb
     command: usr/bin/simple-scan
-    extensions: [ gnome-3-38 ]
+    extensions: [ gnome ]
     desktop: usr/share/applications/simple-scan.desktop
     environment:
       GSETTINGS_SCHEMA_DIR: $SNAP/share/glib-2.0/schemas
@@ -81,7 +81,8 @@ parts:
       - libcolord-dev
       - libdbus-glib-1-dev
       - libglib2.0-dev
-      - libgtk-3-dev
+      - libgtk-4-dev
+      - libadwaita-1-dev
       - libgdk-pixbuf2.0-dev
       - libgusb-dev
       - libgirepository1.0-dev

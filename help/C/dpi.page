@@ -29,10 +29,7 @@
         <gui style="menuitem">Preferences</gui>.</p>
       </item>
       <item>
-        <p>Select <gui style="tab">Quality</gui>.</p>
-      </item>
-      <item>
-        <p>Change the <gui>Text Resolution</gui> or <gui>Image Resolution</gui> value.</p>
+        <p>In <gui style="group">Quality</gui> section change the <gui>Text Resolution</gui> or <gui>Image Resolution</gui> value.</p>
       </item>
       <item>
         <p>Close the dialog.</p>
@@ -54,6 +51,10 @@
 	<tr>
 		<td><p>150 dpi (default)</p></td>
 		<td><p>150 dpi</p></td>
+	</tr>
+	<tr>
+		<td><p>200 dpi</p></td>
+		<td><p>200 dpi</p></td>
 	</tr>
 	<tr>
 		<td><p>300 dpi</p></td>

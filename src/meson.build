@@ -1,5 +1,5 @@
 vala_args = [ '--pkg=posix', '--vapidir=' + meson.current_source_dir () ]
-dependencies = [ glib_dep, gtk_dep, libhandy_dep, zlib_dep, cairo_dep, gdk_pixbuf_dep, gusb_dep, sane_dep ]
+dependencies = [ glib_dep, gtk_dep, libadwaita_dep, zlib_dep, cairo_dep, gdk_pixbuf_dep, gusb_dep, sane_dep ]
 if colord_dep.found ()
     vala_args += [ '-D', 'HAVE_COLORD' ]
     dependencies += colord_dep
@@ -19,11 +19,13 @@ simple_scan = executable ('simple-scan',
                             'authorize-dialog.vala',
                             'book.vala',
                             'book-view.vala',
+                            'drivers-dialog.vala',
                             'page.vala',
-                            'page-icon.vala',
+                            'page-texture.vala',
                             'page-view.vala',
                             'postprocessor.vala',
                             'preferences-dialog.vala',
+                            'reorder-pages-dialog.vala',
                             'simple-scan.vala',
                             'scanner.vala',
                             'screensaver.vala',
