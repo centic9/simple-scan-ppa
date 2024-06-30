@@ -1,8 +1,7 @@
 Source: simple-scan
 Section: gnome
 Priority: optional
-Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
-XSBC-Original-Maintainer: Jörg Frings-Fürst <debian@jff.email>
+Maintainer: Jörg Frings-Fürst <debian@jff.email>
 Standards-Version: 4.6.2.0
 Rules-Requires-Root: no
 Build-Depends:
@@ -12,7 +11,7 @@ Build-Depends:
  gettext,
  gir1.2-rsvg-2.0,
  itstool,
- libadwaita-1-dev (>= 1.2.0),
+ libadwaita-1-dev,
  libcairo2-dev,
  libcolord-dev,
  libfribidi-dev,
