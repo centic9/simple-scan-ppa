@@ -219,6 +219,31 @@ public class Page : Object
         this.crop_width = (crop_x + crop_width > scan_width) ? scan_width : crop_width;
         this.crop_height = (crop_y + crop_height > scan_height) ? scan_height : crop_height;
     }
+    
+    public Page copy()
+    {
+        var copy = new Page.from_data (
+            scan_width,
+            scan_height,
+            rowstride,
+            n_channels,
+            depth,
+            dpi,
+            scan_direction,
+            color_profile,
+            pixels,
+            has_crop,
+            crop_name,
+            crop_x,
+            crop_y,
+            crop_width,
+            crop_height
+        );
+        
+        copy.scan_line = scan_line;
+        
+        return copy;
+    }
 
     public void set_page_info (ScanPageInfo info)
     {
@@ -649,10 +674,9 @@ public class Page : Object
 
     public void copy_to_clipboard (Gtk.Window window)
     {
-        var display = window.get_display ();
-        var clipboard = Gtk.Clipboard.get_for_display (display, Gdk.SELECTION_CLIPBOARD);
+        var clipboard = window.get_clipboard();
         var image = get_image (true);
-        clipboard.set_image (image);
+        clipboard.set_value (image);
     }
 
     public void save_png (File file) throws Error
