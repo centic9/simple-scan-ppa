@@ -1,3 +1,9 @@
+simple-scan (46.0-1ubuntu0~ppa1) noble; urgency=medium
+
+  * Backport to Noble
+
+ -- Dominik Stadler (Ubuntu key) <dominik.stadler@gmx.at>  Fri, 11 Oct 2024 12:46:05 +0200
+
 simple-scan (46.0-1) unstable; urgency=medium
 
   * New upstream release.
