@@ -2,9 +2,10 @@ Source: simple-scan
 Section: gnome
 Priority: optional
 Maintainer: Jörg Frings-Fürst <debian@jff.email>
-Standards-Version: 4.6.2.0
+Standards-Version: 4.7.2
 Rules-Requires-Root: no
 Build-Depends:
+ appstream <!nocheck>,
  debhelper-compat (= 13),
  dh-sequence-gnome,
  dh-sequence-scour,
@@ -34,8 +35,8 @@ Build-Depends:
  scour,
  valac,
  zlib1g-dev
-Homepage: https://gitlab.gnome.org/GNOME/simple-scan
-Vcs-Git: git://git.jff.email/simple-scan.git
+Homepage: https://apps.gnome.org/SimpleScan/
+Vcs-Git: https://git.jff.email/cgit/simple-scan.git
 Vcs-Browser: https://git.jff.email/cgit/simple-scan.git
 
 Package: simple-scan

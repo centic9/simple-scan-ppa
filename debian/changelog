@@ -1,3 +1,17 @@
+simple-scan (46.0-2) unstable; urgency=medium
+
+  * debian/control:
+    - Update homepage (Closes: #1078348).
+    - Add appstream <!nocheck> to Build-Depends Closes: #1076200).
+  * debian/copyright:
+    - Add year 2025 to myself.
+    - Rewrite (Closes: #1076227).
+  * Declare compliance with Debian Policy 4.7.2 (No changes needed).
+  * debian/control:
+    - Change Vcs-Git from git: to https:.
+
+ -- Jörg Frings-Fürst <debian@jff.email>  Tue, 18 Mar 2025 19:38:35 +0100
+
 simple-scan (46.0-1) unstable; urgency=medium
 
   * New upstream release.
