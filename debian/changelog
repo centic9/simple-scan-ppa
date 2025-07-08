@@ -1,3 +1,16 @@
+simple-scan (48.1-0ubuntu2) questing; urgency=medium
+
+  * d/p/lp2112619-postprocessing-fixes.patch: fix postprocessing error
+    handling and script output (LP: #2112619).
+
+ -- Ural Tunaboyu <ural.tunaboyu@canonical.com>  Tue, 08 Jul 2025 13:23:50 -0700
+
+simple-scan (48.1-0ubuntu1) questing; urgency=medium
+
+  * New upstream release (LP: #2115277).
+
+ -- Ural Tunaboyu <ural.tunaboyu@canonical.com>  Wed, 25 Jun 2025 09:51:33 -0700
+
 simple-scan (46.0-2) unstable; urgency=medium
 
   * debian/control:

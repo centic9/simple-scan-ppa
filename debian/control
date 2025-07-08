@@ -1,7 +1,8 @@
 Source: simple-scan
 Section: gnome
 Priority: optional
-Maintainer: Jörg Frings-Fürst <debian@jff.email>
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+XSBC-Original-Maintainer: Jörg Frings-Fürst <debian@jff.email>
 Standards-Version: 4.7.2
 Rules-Requires-Root: no
 Build-Depends:
