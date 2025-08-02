@@ -276,7 +276,7 @@ private class BookSaver
         timer.stop ();
         debug ("Save time: %f seconds", timer.elapsed (null));
 
-        if ( postproc_enabled ) {
+        if ( postproc_enabled && postproc_script.length != 0 ) {
         /* Perform post-processing */
             timer = new Timer ();
             var return_code = postprocessor.process(postproc_script,
@@ -550,6 +550,9 @@ private class BookSaver
         }
         else
         {
+            /* JPEG encoder converts to 8-bit RGB, see issue #459 */
+            depth = 8;
+            color_space = "DeviceRGB";
             filter = "DCTDecode";
             data = jpeg_data;
         }

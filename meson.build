@@ -1,11 +1,11 @@
 project ('simple-scan', ['vala', 'c'],
-         version: '46.0',
+         version: '48.1',
          license: 'GPLv3+',
          default_options: [
              'warning_level=1',
              'buildtype=debugoptimized',
          ],
-         meson_version: '>= 0.40.0')
+         meson_version: '>= 0.57.0')
 
 gnome = import ('gnome')
 i18n = import ('i18n')
